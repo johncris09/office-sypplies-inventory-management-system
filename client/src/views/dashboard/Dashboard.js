@@ -1,11 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { cilFilter, cilInput } from '@coreui/icons'
-import CIcon from '@coreui/icons-react'
+import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import {
-  CAlert,
-  CAlertHeading,
   CButton,
   CCard,
   CCardBody,
@@ -14,25 +10,15 @@ import {
   CForm,
   CFormInput,
   CFormSelect,
-  CModal,
-  CModalBody,
-  CModalHeader,
-  CModalTitle,
   CRow,
-  CTooltip,
 } from '@coreui/react'
-import { CChartBar } from '@coreui/react-chartjs'
-import { faCancel, faFileExcel, faTrash, faTrashAlt } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import Draggable from 'react-draggable'
-import RequiredNote from 'src/helper/RequiredNote'
 import ip from './../../constant/ip'
 import axios from 'axios'
 import { MaterialReactTable } from 'material-react-table'
-import { Box, IconButton, ListItemIcon, MenuItem, Tooltip } from '@mui/material'
-import { AddCircle, CollectionsBookmarkOutlined, Delete, Edit } from '@mui/icons-material'
+import { IconButton, Tooltip } from '@mui/material'
+import { CompressOutlined, Delete } from '@mui/icons-material'
+import FormatDate from 'src/helper/FormatDate'
 
 const Dashboard = ({ pageName, userInfo }) => {
   const navigate = useNavigate()
@@ -41,9 +27,11 @@ const Dashboard = ({ pageName, userInfo }) => {
   const [borrowedItem, setBorrowedItem] = useState([])
   const [borrowerData, setBorrowerData] = useState([])
   const [rowSelection, setRowSelection] = useState({})
-  const [newDataItemQuantityFormModal, setNewDataItemQuantityFormModal] = useState(false)
   const [validated, setValidated] = useState(false)
   const [selectedBorrower, setSelectedBorrower] = useState('')
+  const [quantityInput, setQuantityInput] = useState({})
+  const [borrowerBorrowedItem, setBorrowerBorrowedItem] = useState([])
+  const [itemQuantities, setItemQuantities] = useState({})
 
   useEffect(() => {
     // Check if the token is set in local storage or cookies
@@ -104,8 +92,8 @@ const Dashboard = ({ pageName, userInfo }) => {
             confirmButtonText: 'Ok',
           }).then(async (result) => {
             if (result.isConfirmed) {
-              // setSelectedBorrower('')
-              // setBorrowedItem({})
+              setSelectedBorrower('')
+              setBorrowedItem([])
               setRowSelection({})
             }
           })
@@ -124,67 +112,26 @@ const Dashboard = ({ pageName, userInfo }) => {
     }
   }
 
-  const borrowedColumns = [
-    // {
-    //   accessorKey: 'number',
-    //   header: '#',
-    // },
-    {
-      accessorKey: 'item_name',
-      header: 'Item',
-    },
-    {
-      accessorKey: 'quantityInput',
-      header: 'Quantity',
-    },
-    // {
-    //   accessorKey: 'unit',
-    //   header: 'Unit',
-    // },
-    // {
-    //   accessorKey: 'action',
-    //   header: 'Action',
-    // },
-  ]
-
-  const columns = [
-    {
-      accessorKey: 'item_name',
-      header: 'Item',
-    },
-    {
-      accessorKey: 'total_quantity',
-      header: 'Quantity',
-    },
-    {
-      accessorKey: 'unit',
-      header: 'Unit',
-    },
-  ]
-  const [rowNumber, setRowNumber] = useState(1)
-  const [quantityInput, setQuantityInput] = useState({})
-
-  const calculateRowNumber = (_borrowedItem) => {
-    console.info(_borrowedItem)
-    // borrowedItem.length + 1
-  }
-
   const handleBorrowerChange = (e) => {
     const { value } = e.target
     setSelectedBorrower(value)
+    fetchBorrowerBorrowedItem(value) // if
   }
-  const [itemQuantities, setItemQuantities] = useState({})
+  const fetchBorrowerBorrowedItem = async (borrower_id) => {
+    try {
+      const response = await axios.get(ip + 'transaction/getBorrowerBorrowedItem/' + borrower_id)
+      const formattedData = response.data.map((item) => ({
+        ...item,
+        date_borrowed: FormatDate(item.date_borrowed),
+      }))
+      setBorrowerBorrowedItem(formattedData)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
+  }
   // Function to handle quantity changes for each item
-
   const handleQuantityChange = (rowNumber, inputName, quantity, item_id, availableStock) => {
-    // console.info(itemQuantityRefs.current[rowNumber])
-
     const input = itemQuantityRefs.current[rowNumber]
-
-    // console.info(input.value)
-
-    // console.info(rowNumber, inputName, quantity, availableStock)
-
     if (quantity > availableStock) {
       console.error('Quantity Exceeds Available Stock')
       // Set the input value to 1
@@ -211,10 +158,65 @@ const Dashboard = ({ pageName, userInfo }) => {
     )
   }
 
+  const borrowedColumns = [
+    {
+      accessorKey: 'number',
+      header: '#',
+    },
+    {
+      accessorKey: 'item_name',
+      header: 'Item',
+    },
+    {
+      accessorKey: 'quantityInput',
+      header: 'Quantity',
+    },
+    {
+      accessorKey: 'unit',
+      header: 'Unit',
+    },
+    {
+      accessorKey: 'action',
+      header: 'Action',
+    },
+  ]
+
+  const columns = [
+    {
+      accessorKey: 'item_name',
+      header: 'Item',
+    },
+    {
+      accessorKey: 'total_quantity',
+      header: 'Quantity',
+    },
+    {
+      accessorKey: 'unit',
+      header: 'Unit',
+    },
+  ]
+  const borrower_borrowed_item_column = [
+    {
+      accessorKey: 'date_borrowed',
+      header: 'Date Borrowed',
+    },
+    {
+      accessorKey: 'item_name',
+      header: 'Item',
+    },
+    {
+      accessorKey: 'quantity_borrowed',
+      header: 'Quantity',
+    },
+    {
+      accessorKey: 'item_unit',
+      header: 'Unit',
+    },
+  ]
   return userInfo.role_type === 'User' ? (
     <>
       <CRow>
-        <CCol md={6}>
+        <CCol md={7}>
           <CCard className="mb-4">
             <CCardHeader>
               <strong>Borrowed Item(s)</strong>
@@ -269,14 +271,13 @@ const Dashboard = ({ pageName, userInfo }) => {
                 <CCol xs={12}>
                   <CButton color="primary" type="submit" className="float-end">
                     Submit
-                    {/* {editMode ? 'Update' : 'Submit form'} */}
                   </CButton>
                 </CCol>
               </CForm>
             </CCardBody>
           </CCard>
         </CCol>
-        <CCol md={6}>
+        <CCol md={5}>
           <CCard className="mb-4">
             <CCardHeader>
               <strong>List of Items</strong>
@@ -297,9 +298,6 @@ const Dashboard = ({ pageName, userInfo }) => {
                       )
                       if (itemIndex !== -1) {
                         // If it's already in borrowedItem, remove it
-                        // const updatedBorrowedItem = [...borrowedItem, number: borrowedItem.length - 1]
-                        // updatedBorrowedItem.splice(itemIndex, 1)
-                        // setBorrowedItem(updatedBorrowedItem)
 
                         const updatedBorrowedItem = borrowedItem.filter(
                           (item) => item.item_id !== row.original.item_id,
@@ -320,11 +318,11 @@ const Dashboard = ({ pageName, userInfo }) => {
                         setBorrowedItem((prevBorrowedItems) => [
                           ...prevBorrowedItems,
                           {
-                            // number: borrowedItem.length + 1,
+                            number: borrowedItem.length + 1,
                             item_id: row.original.item_id,
                             item_name: row.original.item_name,
                             quantity: 1,
-                            // unit: row.original.unit,
+                            unit: row.original.unit,
                             quantityInput: (
                               <CFormInput
                                 ref={(ref) => handleItemQuantityRef(row.id, ref)}
@@ -347,29 +345,29 @@ const Dashboard = ({ pageName, userInfo }) => {
                                 required
                               />
                             ),
-                            // action: (
-                            //   <Tooltip arrow placement="right" title="Remove">
-                            //     <IconButton
-                            //       color="error"
-                            //       size="sm"
-                            //       onClick={() => {
-                            //         // Remove the item from borrowedItem
-                            //         const updatedBorrowedItem = borrowedItem.filter(
-                            //           (item) => item.item_name !== row.original.item_name,
-                            //         )
-                            //         setBorrowedItem(updatedBorrowedItem)
+                            action: (
+                              <Tooltip arrow placement="right" title="Remove">
+                                <IconButton
+                                  color="error"
+                                  size="sm"
+                                  onClick={() => {
+                                    // Remove the item from borrowedItem
+                                    const updatedBorrowedItem = borrowedItem.filter(
+                                      (item) => item.item_name !== row.original.item_name,
+                                    )
+                                    setBorrowedItem(updatedBorrowedItem)
 
-                            //         // Toggle the row selection status
-                            //         setRowSelection((prev) => ({
-                            //           ...prev,
-                            //           [row.id]: false,
-                            //         }))
-                            //       }}
-                            //     >
-                            //       <Delete />
-                            //     </IconButton>
-                            //   </Tooltip>
-                            // ),
+                                    // Toggle the row selection status
+                                    setRowSelection((prev) => ({
+                                      ...prev,
+                                      [row.id]: false,
+                                    }))
+                                  }}
+                                >
+                                  <Delete />
+                                </IconButton>
+                              </Tooltip>
+                            ),
                           },
                         ])
 
@@ -400,6 +398,28 @@ const Dashboard = ({ pageName, userInfo }) => {
           </CCard>
         </CCol>
       </CRow>
+      {selectedBorrower && borrowerBorrowedItem.length > 0 && (
+        <CRow>
+          <CCol md={7}>
+            <CCard className="mb-4">
+              <CCardHeader>
+                <strong>Borrower&apos;s Borrowed Item</strong>
+              </CCardHeader>
+              <CCardBody>
+                {/* Borrower's Borrowed Item */}
+                <MaterialReactTable
+                  columns={borrower_borrowed_item_column}
+                  data={borrowerBorrowedItem}
+                  enableColumnActions={false}
+                  enableColumnFilters={false}
+                  enableTopToolbar={false}
+                  initialState={{ density: 'compact' }}
+                />
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      )}
     </>
   ) : (
     <>

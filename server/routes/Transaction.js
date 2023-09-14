@@ -3,25 +3,67 @@ import db from "../db.js";
 const router = express.Router();
 const table = "item";
 
-// router.get("/", async (req, res, next) => {
-//   const q =
-//     `SELECT
-//           p.id AS item_id,
-//           p.name AS item_name,
-//           COALESCE(SUM(ps.quantity_added), 0) AS total_quantity,
-//           p.unit AS unit
-//       FROM
-//           item AS p
-//       left JOIN
-//           item_stock AS ps ON p.id = ps.item_id
-//       GROUP BY
-//           p.id, p.name, p.unit
-//       ORDER BY  p.name`;
-//   db.query(q, (err, result) => {
-//     if (err) throw err;
-//     res.json(result);
-//   });
-// });
+router.get("/", async (req, res, next) => {
+  
+  const q = `SELECT
+        t.date_borrowed AS date_borrowed,
+        b.name AS borrower_name,
+        i.unit AS item_unit,
+        i.name AS item_name,
+        t.quantity_borrowed AS quantity_borrowed
+    FROM
+        transaction AS t
+    INNER JOIN
+        borrower AS b ON t.borrower_id = b.id
+    INNER JOIN
+        item AS i ON t.item_id = i.id
+    order by t.date_borrowed desc;`;
+  db.query(q, (err, result) => {
+    if (err) throw err;
+    res.json(result);
+  });
+});
+
+
+
+router.get("/getBorrowerBorrowedItem/:borrower_id", async (req, res, next) => {
+  try {
+    const borrower_id = req.params.borrower_id; 
+    const q = `
+      SELECT
+          t.date_borrowed AS date_borrowed,
+          b.name AS borrower_name,
+          i.unit AS item_unit,
+          i.name AS item_name,
+          t.quantity_borrowed AS quantity_borrowed
+      FROM transaction AS
+          t
+      INNER JOIN borrower AS b
+      ON
+          t.borrower_id = b.id
+      INNER JOIN item AS i
+      ON
+          t.item_id = i.id
+      WHERE
+          t.borrower_id = ?
+      ORDER BY
+          t.date_borrowed
+      DESC;`;
+    db.query(q, [borrower_id], (err, results) => {
+      if (err) {
+        console.error("Error fetching data:", err);
+        res.status(500).json({ error: "Error fetching data" });
+        return;
+      }
+
+      res.json(results);
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Error fetching data" });
+  }
+});
+
 
 router.post("/", async (req, res, next) => {
   try {

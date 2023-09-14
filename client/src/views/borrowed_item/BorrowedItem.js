@@ -43,11 +43,11 @@ const BorrowedItem = ({ pageName }) => {
   })
   useEffect(() => {
     fetchData()
-  }, [data])
+  }, [])
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(ip + 'transaction/borrowed_item')
+      const response = await axios.get(ip + 'transaction')
       const formattedData = response.data.map((item) => ({
         ...item,
         date_borrowed: FormatDate(item.date_borrowed),
