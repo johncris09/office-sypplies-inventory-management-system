@@ -1,0 +1,40 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+
+# server
+/server/node_modules
+/server/package-lock.json
+
+
+
+# client
+
+/client/package-lock.json
+/client/node_modules
+/client/package-lock.json
+/client/yarn.lock
+
+
+# testing
+/client/coverage
+
+# production
+/client/build
+
+
+# misc
+/client/.eslintcache
+/client/.DS_Store
+/client/.idea
+/client/.env.local
+/client/.env.development.local
+/client/.env.test.local
+/client/.env.production.local
+
+/client/npm-debug.log*
+/client/yarn-debug.log*
+/client/yarn-error.log*
+
+
+/client/src/assets/images/avatars/
