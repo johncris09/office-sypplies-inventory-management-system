@@ -24,11 +24,9 @@ router.get("/", async (req, res, next) => {
   });
 });
 
-
-
 router.get("/getBorrowerBorrowedItem/:borrower_id", async (req, res, next) => {
   try {
-    const borrower_id = req.params.borrower_id; 
+    const borrower_id = req.params.borrower_id;
     const q = `
       SELECT
           t.date_borrowed AS date_borrowed,
@@ -64,6 +62,130 @@ router.get("/getBorrowerBorrowedItem/:borrower_id", async (req, res, next) => {
   }
 });
 
+router.get("/fetchItemBorrowedByDate", async (req, res, next) => {
+  try {
+    let item_id = req.query.item_id;
+    let target_month = req.query.month;
+    let target_year = req.query.year;
+
+    const q = `
+  SELECT
+  transaction.item_id,
+      dates.date as date_borrowed,
+      SUM(
+          IFNULL(
+              transaction.quantity_borrowed,
+              0
+          )
+      ) AS quantity
+  FROM
+      (
+      SELECT
+          DATE_ADD(
+              LAST_DAY(CONCAT(${target_year}, '-', LPAD(${target_month}, 2, '0'), '-01')),
+              INTERVAL 1 DAY
+          ) - INTERVAL n DAY AS DATE
+      FROM
+          (
+          SELECT
+              n + 1 AS n
+          FROM
+              (
+              SELECT
+                  units.n + tens.n * 10 AS n
+              FROM
+                  (
+                  SELECT
+                      0 AS n
+                  UNION ALL
+                  SELECT
+                      1
+                  UNION ALL
+                  SELECT
+                      2
+                  UNION ALL
+                  SELECT
+                      3
+                  UNION ALL
+                  SELECT
+                      4
+                  UNION ALL
+                  SELECT
+                      5
+                  UNION ALL
+                  SELECT
+                      6
+                  UNION ALL
+                  SELECT
+                      7
+                  UNION ALL
+                  SELECT
+                      8
+                  UNION ALL
+                  SELECT
+                      9
+                  ) units
+                  CROSS JOIN(
+                      SELECT
+                          0 AS n
+                      UNION ALL
+                      SELECT
+                          1
+                      UNION ALL
+                      SELECT
+                          2
+                      UNION ALL
+                      SELECT
+                          3
+                      UNION ALL
+                      SELECT
+                          4
+                      UNION ALL
+                      SELECT
+                          5
+                      UNION ALL
+                      SELECT
+                          6
+                      UNION ALL
+                      SELECT
+                          7
+                      UNION ALL
+                      SELECT
+                          8
+                      UNION ALL
+                      SELECT
+                          9
+                  ) tens
+              ) numbers
+          WHERE
+              n BETWEEN 0 
+              AND DAY(LAST_DAY(CONCAT(${target_year}, '-', LPAD(${target_month}, 2, '0'), '-01')))
+      ) date_series
+  ) dates
+  LEFT JOIN transaction ON dates.date = DATE(transaction.date_borrowed) 
+  AND ${item_id ? `transaction.item_id = ${item_id}` : "true"}
+  WHERE
+      MONTH(dates.date) = ${target_month}
+      AND YEAR(dates.date) = ${target_year}
+  GROUP BY
+      dates.date
+  ORDER BY
+      dates.date;`;
+
+    db.query(q, (err, results) => {
+      if (err) {
+        console.error("Error fetching data:", err);
+        res.status(500).json({ error: "Error fetching data" });
+        return;
+      }
+
+      res.json(results);
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Error fetching data" });
+  }
+});
 
 router.post("/", async (req, res, next) => {
   try {
@@ -98,12 +220,12 @@ router.post("/", async (req, res, next) => {
           item.item_id,
         ],
         (err, result) => {
-          if (err) { 
+          if (err) {
             console.log("error");
           }
 
           // Check if the update affected any rows
-          if (result.affectedRows === 0) { 
+          if (result.affectedRows === 0) {
             console.log("No rows were updated");
           }
 
@@ -120,12 +242,12 @@ router.post("/", async (req, res, next) => {
                 return;
               }
 
-              console.log("Data inserted successfully:", result); 
+              console.log("Data inserted successfully:", result);
             }
-          ); 
+          );
           console.log("Borrow successful");
         }
-      ); 
+      );
     });
     res.status(201).json({ message: "Data inserted successfully" });
   } catch (error) {
