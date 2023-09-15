@@ -24,14 +24,14 @@ router.post('/', async (req, res) => {
     // Check if the user exists in the database
     const user = results[0];
     if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid Username/Password." });
     }
 
     try { 
       // Check if the password is correct
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        return res.status(401).json({ error: "Invalid Username/Password." });
       }
 
       // Remove the key from the user object
