@@ -26,6 +26,7 @@ import { MaterialReactTable } from 'material-react-table'
 import { AddCircle, DeleteOutline, EditSharp } from '@mui/icons-material'
 import Swal from 'sweetalert2'
 import FormatDate from 'src/helper/FormatDate'
+import ConvertToTitleCase from 'src/helper/ConvertToTitleCase'
 
 const Item = ({ pageName }) => {
   const api = 'item'
@@ -119,7 +120,7 @@ const Item = ({ pageName }) => {
         // Fetch updated data
         fetchData()
 
-        setValidated(true)
+        // setValidated(true)
         setNewDataFormModalVisible(false)
       }
     } catch (error) {
@@ -189,7 +190,14 @@ const Item = ({ pageName }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
+
+    setFormData((prevData) => {
+      if (name === 'name') {
+        return { ...prevData, [name]: ConvertToTitleCase(value) }
+      } else {
+        return { ...prevData, [name]: value }
+      }
+    })
   }
   const handleItemQuantityAddedChange = (e) => {
     const { name, value } = e.target
