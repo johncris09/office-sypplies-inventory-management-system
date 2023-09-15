@@ -83,9 +83,7 @@ router.post("/", async (req, res, next) => {
         res.status(500).json({ error: err.sqlMessage });
         return;
       }
-
-      console.log("Data inserted successfully:", result);
-      res.status(201).json({ message: "Data inserted successfully" });
+      res.status(201).json({ message: "Data inserted successfully", item_id: result.insertId });
     });
   } catch (error) {
     console.error("Error:", error);

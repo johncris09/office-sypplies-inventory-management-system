@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { cilFilter } from '@coreui/icons'
-import CIcon from '@coreui/icons-react'
 import {
-  CAlert,
-  CAlertHeading,
   CButton,
   CCard,
   CCardBody,
@@ -19,28 +14,17 @@ import {
   CModalTitle,
   CRow,
 } from '@coreui/react'
-import { CChartBar } from '@coreui/react-chartjs'
-import { faCancel, faPlusCircle } from '@fortawesome/free-solid-svg-icons'
+import { faPlusCircle } from '@fortawesome/free-solid-svg-icons'
 import GetErrorMessage from 'src/helper/GetErrorMessage'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import Draggable from 'react-draggable'
 import RequiredNote from 'src/helper/RequiredNote'
 import ip from '../../constant/ip'
 import axios from 'axios'
-import { Box, IconButton, ListItemIcon, MenuItem, Stack, Tooltip } from '@mui/material'
+import { ListItemIcon, MenuItem } from '@mui/material'
 import { MaterialReactTable } from 'material-react-table'
-import {
-  Add,
-  AddCircle,
-  CollectionsBookmarkOutlined,
-  DeleteOutline,
-  EditSharp,
-  PlusOne,
-} from '@mui/icons-material'
+import { AddCircle, DeleteOutline, EditSharp } from '@mui/icons-material'
 import Swal from 'sweetalert2'
-import FormatDateTime from 'src/helper/FormatDateTime'
 import FormatDate from 'src/helper/FormatDate'
 
 const Item = ({ pageName }) => {
@@ -48,17 +32,13 @@ const Item = ({ pageName }) => {
   const [data, setData] = useState([])
   const [itemName, setItemName] = useState('')
   const [itemUnit, setItemUnit] = useState('')
-  const [itemTotalQuantity, setItemTotalQuantity] = useState('')
-
   const [itemStock, setItemStock] = useState([])
   const [editMode, setEditMode] = useState(false)
   const [validated, setValidated] = useState(false)
   const [newDataFormModalVisible, setNewDataFormModalVisible] = useState(false)
   const [addItemQuantityModel, setAddItemQuantityModel] = useState(false)
-  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 })
   const [selectedItemId, setSelectedItemId] = useState(null)
   const [selectedItemQuantityId, setSelectedItemQuantityId] = useState(null)
-  const [isPasswordFieldVisible, setPasswordFieldVisible] = useState(true)
   const [formData, setFormData] = useState({
     name: '',
     unit: '',
@@ -68,7 +48,6 @@ const Item = ({ pageName }) => {
     quantity_added: '',
     date_added: '',
   })
-  const navigate = useNavigate()
 
   useEffect(() => {
     fetchData()
@@ -166,6 +145,21 @@ const Item = ({ pageName }) => {
 
   const addData = async (data) => {
     const response = await axios.post(ip + api, data)
+
+    let item_id = response.data.item_id
+    fetchItemStockData(item_id)
+
+    setFormItemQuantityData({
+      item_id: item_id,
+      quantity_added: '',
+      date_added: '',
+    })
+    setSelectedItemQuantityId(null)
+    setItemName(data.name)
+    setItemUnit(data.unit)
+    setAddItemQuantityModel(true)
+    setValidated(false)
+
     // // Show success message
     Swal.fire({
       title: 'Success!',
@@ -175,14 +169,22 @@ const Item = ({ pageName }) => {
   }
 
   const deleteData = async (id) => {
-    console.info(id)
-    const response = await axios.delete(ip + api, { data: { id: id } })
-    // Show success message
-    Swal.fire({
-      title: 'Success!',
-      html: response.data.message,
-      icon: 'success',
-    })
+    try {
+      const response = await axios.delete(ip + api, { data: { id: id } })
+      // Show success message
+      Swal.fire({
+        title: 'Success!',
+        html: response.data.message,
+        icon: 'success',
+      })
+    } catch (error) {
+      // Show error message
+      Swal.fire({
+        title: 'Error!',
+        html: ' Unable to Delete/Update Record',
+        icon: 'error',
+      })
+    }
   }
 
   const handleChange = (e) => {
@@ -339,7 +341,6 @@ const Item = ({ pageName }) => {
                     key={0}
                     onClick={async () => {
                       closeMenu()
-                      console.log(row.original)
                       let item_id = row.original.item_id
                       fetchItemStockData(item_id)
 
