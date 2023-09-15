@@ -504,7 +504,6 @@ const Dashboard = ({ pageName, userInfo }) => {
                   <h4 id="traffic" className="card-title mb-0">
                     Total Borrowed Item By Date
                   </h4>
-                  <div className="small text-medium-emphasis">January - July 2021</div>
                 </CCol>
                 <CCol sm={5} className="d-none d-md-block">
                   <CInputGroup size="sm">
