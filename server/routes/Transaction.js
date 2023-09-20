@@ -1,10 +1,13 @@
 import express from "express";
 import db from "../db.js";
+import util from "util"; // To promisify MySQL queries
 const router = express.Router();
 const table = "item";
 
+// Promisify MySQL queries
+const query = util.promisify(db.query).bind(db);
+
 router.get("/", async (req, res, next) => {
-  
   const q = `SELECT
         t.date_borrowed AS date_borrowed,
         b.name AS borrower_name,
@@ -22,7 +25,8 @@ router.get("/", async (req, res, next) => {
     if (err) throw err;
     res.json(result);
   });
-});
+}); 
+
 
 router.get("/getBorrowerBorrowedItem/:borrower_id", async (req, res, next) => {
   try {
@@ -189,13 +193,16 @@ router.get("/fetchItemBorrowedByDate", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    // res.send(req.body)
-
     const currentDate = new Date();
     const date_added = currentDate.toISOString();
 
+    let borrowedItemDetails = req.body; 
+    for (const borrowedItem of borrowedItemDetails) {
+      const { item_id, quantity, borrower } = borrowedItem;
+      await updateItemStockAndTrack(item_id, quantity, borrower);
+    } 
+
     req.body.forEach((item) => {
-      let borrowedQuantity = item.quantity;
       const borrowQuery = `
       UPDATE item_stock
       SET quantity_added = CASE
@@ -255,6 +262,51 @@ router.post("/", async (req, res, next) => {
     res.status(500).json({ error: "Error inserting data" });
   }
 });
+
+async function updateItemStockAndTrack(item_id, borrowed_quantity, borrower_id) {
+  let remainingBorrowedQuantity = borrowed_quantity;
+
+  while (remainingBorrowedQuantity > 0) {
+    // Find the oldest stock for the item
+    const queryStr = `SELECT id, quantity_added FROM item_stock WHERE item_id = ${item_id} AND quantity_added > 0 ORDER BY date_added ASC LIMIT 1`;
+
+    try {
+      const rows = await query(queryStr);
+
+      if (rows.length > 0) {
+        const oldestStock = rows[0];
+        const borrowedFromOldestStock = Math.min(
+          remainingBorrowedQuantity,
+          oldestStock.quantity_added
+        );
+
+        // Update the track_item_quantity table
+        const trackItemQuantityQuery = `INSERT INTO track_item_quantity (item_stock_id, borrowed_quantity, borrower_id, date_borrowed) VALUES (?, ?, ? NOW())`;
+
+        await query(trackItemQuantityQuery, [
+          oldestStock.id,
+          borrowedFromOldestStock,
+          borrower_id,
+        ]);
+
+        // Update the item stock table
+        const updateStockQuery = `UPDATE item_stock SET quantity_added = quantity_added - ? WHERE id = ?`;
+
+        await query(updateStockQuery, [
+          borrowedFromOldestStock,
+          oldestStock.id,
+        ]);
+
+        remainingBorrowedQuantity -= borrowedFromOldestStock;
+      } else {
+        // No more available stock for this item
+        break;
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+}
 
 router.get("/borrowed_item", async (req, res, next) => {
   const q = `SELECT

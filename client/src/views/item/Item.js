@@ -23,7 +23,7 @@ import ip from '../../constant/ip'
 import axios from 'axios'
 import { ListItemIcon, MenuItem } from '@mui/material'
 import { MaterialReactTable } from 'material-react-table'
-import { AddCircle, DeleteOutline, EditSharp } from '@mui/icons-material'
+import { AddCircle, Article, CottageSharp, DeleteOutline, EditSharp } from '@mui/icons-material'
 import Swal from 'sweetalert2'
 import FormatDate from 'src/helper/FormatDate'
 import ConvertToTitleCase from 'src/helper/ConvertToTitleCase'
@@ -34,6 +34,7 @@ const Item = ({ pageName }) => {
   const [itemName, setItemName] = useState('')
   const [itemUnit, setItemUnit] = useState('')
   const [itemStock, setItemStock] = useState([])
+  const [tractItemQuantity, setTractItemQuantity] = useState([])
   const [editMode, setEditMode] = useState(false)
   const [validated, setValidated] = useState(false)
   const [newDataFormModalVisible, setNewDataFormModalVisible] = useState(false)
@@ -72,6 +73,21 @@ const Item = ({ pageName }) => {
           date_added: FormatDate(item.date_added),
         }))
         setItemStock(formattedData)
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
+  }
+
+  const fetchTrackItemQuantityData = async (item_id) => {
+    try {
+      if (item_id) {
+        const response = await axios.get(ip + 'track_item_quantity/view/' + item_id)
+        const formattedData = response.data.map((item) => ({
+          ...item,
+          date_borrowed: FormatDate(item.date_borrowed),
+        }))
+        setTractItemQuantity(formattedData)
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -149,6 +165,7 @@ const Item = ({ pageName }) => {
 
     let item_id = response.data.item_id
     fetchItemStockData(item_id)
+    fetchTrackItemQuantityData(item_id)
 
     setFormItemQuantityData({
       item_id: item_id,
@@ -241,6 +258,7 @@ const Item = ({ pageName }) => {
 
         // Fetch updated data
         fetchItemStockData(item_id)
+        fetchTrackItemQuantityData(item_id)
 
         // setValidated(true)
         // setNewDataFormModalVisible(false)
@@ -305,13 +323,36 @@ const Item = ({ pageName }) => {
     },
   ]
 
-  const itemSotckColumns = [
+  const itemStockColumns = [
+    {
+      accessorKey: 'date_added',
+      header: 'Date',
+    },
     {
       accessorKey: 'quantity_added',
       header: 'Quantity',
     },
     {
-      accessorKey: 'date_added',
+      accessorKey: 'borrowed_quantity',
+      header: 'Borrowed Quantity',
+    },
+    {
+      accessorKey: 'total_quantity',
+      header: 'Total Quantity',
+    },
+  ]
+
+  const tractItemQuantityColumns = [
+    {
+      accessorKey: 'borrowed_quantity',
+      header: 'Borrowed Quantity',
+    },
+    {
+      accessorKey: 'name',
+      header: 'Borrower',
+    },
+    {
+      accessorKey: 'date_borrowed',
       header: 'Date',
     },
   ]
@@ -351,6 +392,7 @@ const Item = ({ pageName }) => {
                       closeMenu()
                       let item_id = row.original.item_id
                       fetchItemStockData(item_id)
+                      fetchTrackItemQuantityData(item_id)
 
                       setFormItemQuantityData({
                         item_id: row.original.item_id,
@@ -366,9 +408,9 @@ const Item = ({ pageName }) => {
                     sx={{ m: 0 }}
                   >
                     <ListItemIcon>
-                      <AddCircle />
+                      <Article />
                     </ListItemIcon>
-                    Add Quantity
+                    View Details
                   </MenuItem>,
                   <MenuItem
                     key={1}
@@ -495,165 +537,206 @@ const Item = ({ pageName }) => {
       </CModal>
 
       <CModal
+        fullscreen
         alignment="center"
         visible={addItemQuantityModel}
         onClose={() => setAddItemQuantityModel(false)}
         backdrop="static"
-        keyboard={false}
-        size="xl"
+        aria-labelledby="ItemDetailsModal"
       >
         <CModalHeader>
-          <CModalTitle>{selectedItemQuantityId ? 'Edit Quantity' : 'Add Quantity'}</CModalTitle>
+          <CModalTitle id="ItemDeModal">
+            {selectedItemQuantityId ? 'Edit Quantity' : 'View Item Details'}
+          </CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <RequiredNote />
-          <table>
-            <tr>
-              <td>Item Name</td>
-              <td>:</td>
-              <td>
-                <u>
-                  <strong>{itemName}</strong>
-                </u>
-              </td>
-            </tr>
-            <tr>
-              <td>Available Stock</td>
-              <td>:</td>
-              <td>
-                <u>
-                  <strong>
-                    {itemStock.reduce(
-                      (accumulator, currentItem) => accumulator + currentItem.quantity_added,
-                      0,
-                    )}
-                  </strong>
-                </u>
-              </td>
-            </tr>
-            <tr>
-              <td>Item Unit</td>
-              <td>:</td>
-              <td>
-                <u>
-                  <strong>{itemUnit}</strong>
-                </u>
-              </td>
-            </tr>
-          </table>
-          <>
-            <CForm
-              className="row g-3 needs-validation mb-5"
-              noValidate
-              validated={validated}
-              onSubmit={handleItemManageQuantitySubmit}
-            >
-              <CCol md={12}>
-                <CFormInput
-                  type="hidden"
-                  name="item_id"
-                  value={formItemQuantityData.item_id}
-                  required
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormInput
-                  type="number"
-                  feedbackInvalid="Quantity is required"
-                  id="quantity_added"
-                  label={
-                    <>
-                      Quantity
-                      <span className="text-warning">
-                        <strong>*</strong>
-                      </span>
-                    </>
-                  }
-                  name="quantity_added"
-                  value={formItemQuantityData.quantity_added}
-                  onChange={handleItemQuantityAddedChange}
-                  required
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormInput
-                  type="date"
-                  feedbackInvalid="Date is required"
-                  id="date_added"
-                  label={
-                    <>
-                      Date
-                      <span className="text-warning">
-                        <strong>*</strong>
-                      </span>
-                    </>
-                  }
-                  name="date_added"
-                  value={formItemQuantityData.date_added}
-                  onChange={handleItemQuantityAddedChange}
-                  required
-                />
-              </CCol>
-              <hr />
-              <CCol xs={12}>
-                <CButton color="primary" type="submit" className="float-end">
-                  {selectedItemQuantityId ? 'Update' : 'Submit form'}
-                </CButton>
-              </CCol>
-            </CForm>
-
-            <MaterialReactTable
-              columns={itemSotckColumns}
-              data={itemStock}
-              enableColumnFilterModes
-              enableColumnOrdering
-              enableGrouping
-              enablePinning
-              enableRowActions
-              enableColumnResizing
-              initialState={{ density: 'compact' }}
-              positionToolbarAlertBanner="bottom"
-              renderRowActionMenuItems={({ closeMenu, row }) => [
-                <MenuItem
-                  key={0}
-                  onClick={async () => {
-                    closeMenu()
-                    // console.info(FormatDate(row.original.date_added))
-
-                    const dateString = row.original.date_added
-
-                    // Convert the date string to a Date object
-                    const date = new Date(dateString)
-                    // Add one day to the Date object
-                    date.setUTCDate(date.getUTCDate() + 1)
-
-                    // Extract the updated year, month, and day parts after adding one day
-                    const updatedYear = date.getUTCFullYear()
-                    const updatedMonth = String(date.getUTCMonth() + 1).padStart(2, '0')
-                    const updatedDay = String(date.getUTCDate()).padStart(2, '0')
-
-                    // Format the updated date in Y-m-d format
-                    const updatedFormattedDate = `${updatedYear}-${updatedMonth}-${updatedDay}`
-
-                    setFormItemQuantityData({
-                      item_id: row.original.item_id,
-                      quantity_added: row.original.quantity_added,
-                      date_added: updatedFormattedDate,
-                    })
-                    setSelectedItemQuantityId(row.original.id)
-                    // setNewDataFormModalVisible(true)
-                    // setEditMode(true)
-                  }}
-                  sx={{ m: 0 }}
+          <CRow>
+            <CCol md={6}>
+              <RequiredNote />
+              <table>
+                <tr>
+                  <td>Item Name</td>
+                  <td>:</td>
+                  <td>
+                    <u>
+                      <strong>{itemName}</strong>
+                    </u>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Available Stock</td>
+                  <td>:</td>
+                  <td>
+                    <u>
+                      <strong>
+                        {itemStock.reduce(
+                          (accumulator, currentItem) => accumulator + currentItem.quantity_added,
+                          0,
+                        )}
+                      </strong>
+                    </u>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Item Unit</td>
+                  <td>:</td>
+                  <td>
+                    <u>
+                      <strong>{itemUnit}</strong>
+                    </u>
+                  </td>
+                </tr>
+              </table>
+              <>
+                <CForm
+                  className="row g-3 needs-validation mb-5"
+                  noValidate
+                  validated={validated}
+                  onSubmit={handleItemManageQuantitySubmit}
                 >
-                  <ListItemIcon>
-                    <EditSharp />
-                  </ListItemIcon>
-                  Edit
-                </MenuItem>,
-              ]}
-            />
-          </>
+                  <CCol md={12}>
+                    <CFormInput
+                      type="hidden"
+                      name="item_id"
+                      value={formItemQuantityData.item_id}
+                      required
+                    />
+                  </CCol>
+                  <CCol md={6}>
+                    <CFormInput
+                      type="number"
+                      feedbackInvalid="Quantity is required"
+                      id="quantity_added"
+                      label={
+                        <>
+                          Quantity
+                          <span className="text-warning">
+                            <strong>*</strong>
+                          </span>
+                        </>
+                      }
+                      name="quantity_added"
+                      value={formItemQuantityData.quantity_added}
+                      onChange={handleItemQuantityAddedChange}
+                      required
+                    />
+                  </CCol>
+                  <CCol md={6}>
+                    <CFormInput
+                      type="date"
+                      feedbackInvalid="Date is required"
+                      id="date_added"
+                      label={
+                        <>
+                          Date
+                          <span className="text-warning">
+                            <strong>*</strong>
+                          </span>
+                        </>
+                      }
+                      name="date_added"
+                      value={formItemQuantityData.date_added}
+                      onChange={handleItemQuantityAddedChange}
+                      required
+                    />
+                  </CCol>
+                  <hr />
+                  <CCol xs={12}>
+                    <CButton color="primary" type="submit" className="float-end">
+                      {selectedItemQuantityId ? 'Update' : 'Submit form'}
+                    </CButton>
+                  </CCol>
+                </CForm>
+
+                <MaterialReactTable
+                  columns={itemStockColumns}
+                  data={itemStock}
+                  enableColumnFilterModes
+                  enableColumnOrdering
+                  enableGrouping
+                  enablePinning
+                  enableRowActions
+                  enableColumnResizing
+                  initialState={{ density: 'compact' }}
+                  positionToolbarAlertBanner="bottom"
+                  renderRowActionMenuItems={({ closeMenu, row }) => [
+                    <MenuItem
+                      key={0}
+                      onClick={async () => {
+                        closeMenu()
+                        // console.info(FormatDate(row.original.date_added))
+
+                        const dateString = row.original.date_added
+
+                        // Convert the date string to a Date object
+                        const date = new Date(dateString)
+                        // Add one day to the Date object
+                        date.setUTCDate(date.getUTCDate() + 1)
+
+                        // Extract the updated year, month, and day parts after adding one day
+                        const updatedYear = date.getUTCFullYear()
+                        const updatedMonth = String(date.getUTCMonth() + 1).padStart(2, '0')
+                        const updatedDay = String(date.getUTCDate()).padStart(2, '0')
+
+                        // Format the updated date in Y-m-d format
+                        const updatedFormattedDate = `${updatedYear}-${updatedMonth}-${updatedDay}`
+
+                        setFormItemQuantityData({
+                          item_id: row.original.item_id,
+                          quantity_added: row.original.quantity_added,
+                          date_added: updatedFormattedDate,
+                        })
+                        setSelectedItemQuantityId(row.original.id)
+                        // setNewDataFormModalVisible(true)
+                        // setEditMode(true)
+                      }}
+                      sx={{ m: 0 }}
+                    >
+                      <ListItemIcon>
+                        <EditSharp />
+                      </ListItemIcon>
+                      Edit
+                    </MenuItem>,
+                    <MenuItem
+                      key={1}
+                      onClick={async () => {
+                        closeMenu()
+
+                        let stock_item_id = row.original.id
+                        const response = await axios.get(
+                          ip + 'track_item_quantity/track_quantity/' + stock_item_id,
+                        )
+                        const formattedData = response.data.map((item) => ({
+                          ...item,
+                          date_borrowed: FormatDate(item.date_borrowed),
+                        }))
+                        setTractItemQuantity(formattedData)
+                      }}
+                      sx={{ m: 0 }}
+                    >
+                      <ListItemIcon>
+                        <Article />
+                      </ListItemIcon>
+                      View Details
+                    </MenuItem>,
+                  ]}
+                />
+              </>
+            </CCol>
+            <CCol md={6}>
+              <MaterialReactTable
+                columns={tractItemQuantityColumns}
+                data={tractItemQuantity}
+                // enableColumnFilterModes
+                // enableColumnOrdering
+                // enableGrouping
+                // enablePinning
+                // enableColumnResizing
+                initialState={{ density: 'compact' }}
+                positionToolbarAlertBanner="bottom"
+              />
+            </CCol>
+          </CRow>
         </CModalBody>
       </CModal>
     </CRow>

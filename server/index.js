@@ -1,6 +1,6 @@
 import express from "express"
 import cors from "cors"
-const PORT = 3001
+const PORT = 3003
 // import dashboardRoute from "./routes/Dashboard.js"
 // import medicationRoute from "./routes/Medication.js"
 // import barangayRoute from "./routes/Barangay.js"
@@ -11,6 +11,7 @@ const PORT = 3001
 // import adoptClaimRoute from "./routes/AdoptClaim.js"
 // import disposedDogRoute from "./routes/DisposedDog.js"
 import transactionRoute from "./routes/Transaction.js"
+import tractItemQuantityRoute from "./routes/TrackItemQuantity.js"
 import itemRoute from "./routes/Item.js"
 import itemStockRoute from "./routes/ItemStock.js"
 import borrowerRoute from "./routes/Borrower.js"
@@ -32,6 +33,7 @@ app.use(cors())
 // app.use("/dog_pound",  dogPoundRoute);
 // app.use("/adopt_claim",  adoptClaimRoute);
 // app.use("/disposed_dog",  disposedDogRoute);
+app.use("/track_item_quantity",  tractItemQuantityRoute);
 app.use("/transaction",  transactionRoute);
 app.use("/item",  itemRoute);
 app.use("/item_stock",  itemStockRoute);

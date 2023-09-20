@@ -28,7 +28,31 @@ router.get("/", async (req, res, next) => {
 router.get("/item/:id", async (req, res, next) => {
   try {
     const id = req.params.id;
-    const q = "SELECT * FROM `" + table + "` where item_id = ? order by date_added  desc";
+    const q = ` 
+      SELECT
+          i.id,
+          i.quantity_added,
+          COALESCE(s.borrowed_quantity, 0) AS borrowed_quantity,
+          COALESCE(s.borrowed_quantity, 0) + COALESCE(i.quantity_added, 0) AS total_quantity,
+          i.date_added
+      FROM
+          item_stock AS i
+      LEFT JOIN(
+          SELECT item_stock_id,
+              SUM(borrowed_quantity) AS borrowed_quantity
+          FROM
+              track_item_quantity
+          GROUP BY
+              item_stock_id
+      ) AS s
+      ON
+          i.id = s.item_stock_id
+      WHERE
+          item_id = ?
+      ORDER BY
+          date_added
+      DESC 
+    `;
 
     db.query(q, [id], (err, results) => {
       if (err) {
