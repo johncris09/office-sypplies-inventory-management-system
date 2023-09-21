@@ -20,7 +20,6 @@ import {
   CCol,
   CRow,
   CModal,
-  CFormSelect,
   CModalHeader,
   CModalTitle,
   CModalBody,

@@ -20,7 +20,6 @@ import {
   CCol,
   CRow,
   CModal,
-  CFormSelect,
   CModalHeader,
   CModalTitle,
   CModalBody,
@@ -192,7 +191,6 @@ const BorrowedItem = ({ pageName }) => {
                 enableColumnOrdering
                 enableGrouping
                 enablePinning
-                // enableRowActions
                 enableColumnResizing
                 initialState={{ density: 'compact' }}
                 positionToolbarAlertBanner="bottom"

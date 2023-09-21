@@ -519,7 +519,7 @@ const Dashboard = ({ pageName, userInfo }) => {
                       size="sm"
                       onChange={handleFilterChange}
                     >
-                      <option value="">Item</option>
+                      <option value="">All Item</option>
                       {itemData.map((item) => (
                         <option key={item.item_id} value={item.item_id}>
                           {item.item_name}
