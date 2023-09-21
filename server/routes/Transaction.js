@@ -197,62 +197,7 @@ router.post("/", async (req, res, next) => {
     for (const borrowedItem of borrowedItemDetails) {
       const { item_id, quantity, borrower } = borrowedItem;
       await updateItemStockAndTrack(item_id, quantity, borrower);
-    } 
-
-    // req.body.forEach((item) => {
-    //   const borrowQuery = `
-    //   UPDATE item_stock
-    //   SET quantity_added = CASE
-    //     WHEN item_id = ? AND quantity_added >= ? THEN quantity_added - ?
-    //     ELSE quantity_added
-    //   END
-    //   WHERE item_id = ?
-    //   AND date_added = (
-    //       SELECT MIN(date_added)
-    //       FROM item_stock
-    //       WHERE item_id = ?
-    //   );
-    // `;
-
-    //   db.query(
-    //     borrowQuery,
-    //     [
-    //       item.item_id,
-    //       item.quantity,
-    //       item.quantity,
-    //       item.item_id,
-    //       item.item_id,
-    //     ],
-    //     (err, result) => {
-    //       if (err) {
-    //         console.log("error");
-    //       }
-
-    //       // Check if the update affected any rows
-    //       if (result.affectedRows === 0) {
-    //         console.log("No rows were updated");
-    //       }
-
-    //       const q =
-    //         "INSERT INTO transaction SET item_id = ?, borrower_id = ?, quantity_borrowed = ?";
-
-    //       db.query(
-    //         q,
-    //         [item.item_id, item.borrower, item.quantity, date_added],
-    //         (err, result) => {
-    //           if (err) {
-    //             console.error("Error inserting data:", err);
-    //             res.status(500).json({ error: err.sqlMessage });
-    //             return;
-    //           }
-
-    //           console.log("Data inserted successfully:", result);
-    //         }
-    //       );
-    //       console.log("Borrow successful");
-    //     }
-    //   );
-    // });
+    }
     res.status(201).json({ message: "Data inserted successfully" });
     console.log('Data inserted successfully')
   } catch (error) {

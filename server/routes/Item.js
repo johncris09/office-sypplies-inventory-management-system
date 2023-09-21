@@ -6,37 +6,37 @@ const table = "item";
 router.get("/", async (req, res, next) => {
   const q =
     `SELECT
-          i.id,
-          i.name AS item_name,
-          i.unit AS unit,
-          COALESCE(q.quantity_added, 0) AS available_stock,
-          COALESCE(q.borrowed_quantity, 0) AS borrowed_quantity,
-          COALESCE(q.quantity_added, 0) + COALESCE(q.borrowed_quantity, 0) AS total_quantity
-      FROM
-          item AS i
-      LEFT JOIN(
-          SELECT n.item_id,
-              SUM(n.quantity_added) quantity_added,
-              SUM(s.borrowed_quantity) borrowed_quantity
-          FROM
-              item_stock AS n
-          LEFT JOIN(
-              SELECT item_stock_id,
-                  SUM(borrowed_quantity) AS borrowed_quantity
-              FROM
-                  track_item_quantity
-              GROUP BY
-                  item_stock_id
-          ) AS s
-      ON
-          n.id = s.item_stock_id
-      GROUP BY
-          n.item_id
-      ) AS q
-      ON
-          i.id = q.item_id
-      GROUP BY
-          i.id;`;
+    i.id as item_id,
+    i.name AS item_name,
+    i.unit AS unit,
+    COALESCE(q.quantity_added, 0) AS available_stock,
+    COALESCE(q.borrowed_quantity, 0) AS borrowed_quantity,
+    COALESCE(q.quantity_added, 0) + COALESCE(q.borrowed_quantity, 0) AS total_quantity
+FROM
+    item AS i
+LEFT JOIN(
+    SELECT n.item_id,
+        SUM(n.quantity_added) quantity_added,
+        SUM(s.borrowed_quantity) borrowed_quantity
+    FROM
+        item_stock AS n
+    LEFT JOIN(
+        SELECT item_stock_id,
+            SUM(borrowed_quantity) AS borrowed_quantity
+        FROM
+            track_item_quantity
+        GROUP BY
+            item_stock_id
+    ) AS s
+ON
+    n.id = s.item_stock_id
+GROUP BY
+    n.item_id
+) AS q
+ON
+    i.id = q.item_id
+GROUP BY
+    i.id;`;
   db.query(q, (err, result) => {
     if (err) throw err;
     res.json(result);
