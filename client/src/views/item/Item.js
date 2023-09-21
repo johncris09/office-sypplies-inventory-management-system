@@ -8,6 +8,7 @@ import {
   CForm,
   CFormInput,
   CFormSelect,
+  CFormSwitch,
   CModal,
   CModalBody,
   CModalHeader,
@@ -23,7 +24,7 @@ import ip from '../../constant/ip'
 import axios from 'axios'
 import { ListItemIcon, MenuItem } from '@mui/material'
 import { MaterialReactTable } from 'material-react-table'
-import { AddCircle, Article, CottageSharp, DeleteOutline, EditSharp } from '@mui/icons-material'
+import { Article, DeleteOutline, EditSharp } from '@mui/icons-material'
 import Swal from 'sweetalert2'
 import FormatDate from 'src/helper/FormatDate'
 import ConvertToTitleCase from 'src/helper/ConvertToTitleCase'
@@ -40,6 +41,7 @@ const Item = ({ pageName }) => {
   const [newDataFormModalVisible, setNewDataFormModalVisible] = useState(false)
   const [addItemQuantityModel, setAddItemQuantityModel] = useState(false)
   const [selectedItemId, setSelectedItemId] = useState(null)
+  const [isToggleViewAll, setToggleViewAll] = useState(false)
   const [selectedItemQuantityId, setSelectedItemQuantityId] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -65,6 +67,7 @@ const Item = ({ pageName }) => {
   }
 
   const fetchItemStockData = async (item_id) => {
+    console.log(item_id)
     try {
       if (item_id) {
         const response = await axios.get(ip + 'item_stock/item/' + item_id)
@@ -292,7 +295,7 @@ const Item = ({ pageName }) => {
 
   const addItemQuantityData = async (data) => {
     const response = await axios.post(ip + 'item_stock', data)
-    // // Show success message
+    // Show success message
     Swal.fire({
       title: 'Success!',
       html: response.data.message,
@@ -310,7 +313,7 @@ const Item = ({ pageName }) => {
       header: 'Available Stock',
     },
     {
-      accessorKey: 'quantity_borrowed',
+      accessorKey: 'borrowed_quantity',
       header: 'Borrowed Quantity',
     },
     {
@@ -330,7 +333,7 @@ const Item = ({ pageName }) => {
     },
     {
       accessorKey: 'quantity_added',
-      header: 'Quantity',
+      header: 'Avaiable Stock',
     },
     {
       accessorKey: 'borrowed_quantity',
@@ -356,6 +359,16 @@ const Item = ({ pageName }) => {
       header: 'Date',
     },
   ]
+
+  const handleSwitchToggle = async () => {
+    // Toggle the switch value
+    setToggleViewAll(!isToggleViewAll)
+
+    let item_id = formItemQuantityData.item_id
+    if (!isToggleViewAll) {
+      fetchTrackItemQuantityData(item_id)
+    }
+  }
 
   return (
     <CRow>
@@ -469,8 +482,6 @@ const Item = ({ pageName }) => {
         alignment="center"
         visible={newDataFormModalVisible}
         onClose={() => setNewDataFormModalVisible(false)}
-        backdrop="static"
-        keyboard={false}
         size="lg"
       >
         <CModalHeader>
@@ -541,8 +552,8 @@ const Item = ({ pageName }) => {
         alignment="center"
         visible={addItemQuantityModel}
         onClose={() => setAddItemQuantityModel(false)}
-        backdrop="static"
         aria-labelledby="ItemDetailsModal"
+        backdrop="static"
       >
         <CModalHeader>
           <CModalTitle id="ItemDeModal">
@@ -554,38 +565,40 @@ const Item = ({ pageName }) => {
             <CCol md={6}>
               <RequiredNote />
               <table>
-                <tr>
-                  <td>Item Name</td>
-                  <td>:</td>
-                  <td>
-                    <u>
-                      <strong>{itemName}</strong>
-                    </u>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Available Stock</td>
-                  <td>:</td>
-                  <td>
-                    <u>
-                      <strong>
-                        {itemStock.reduce(
-                          (accumulator, currentItem) => accumulator + currentItem.quantity_added,
-                          0,
-                        )}
-                      </strong>
-                    </u>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Item Unit</td>
-                  <td>:</td>
-                  <td>
-                    <u>
-                      <strong>{itemUnit}</strong>
-                    </u>
-                  </td>
-                </tr>
+                <tbody>
+                  <tr>
+                    <td>Item Name</td>
+                    <td>:</td>
+                    <td>
+                      <u>
+                        <strong>{itemName}</strong>
+                      </u>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Available Stock</td>
+                    <td>:</td>
+                    <td>
+                      <u>
+                        <strong>
+                          {itemStock.reduce(
+                            (accumulator, currentItem) => accumulator + currentItem.quantity_added,
+                            0,
+                          )}
+                        </strong>
+                      </u>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Item Unit</td>
+                    <td>:</td>
+                    <td>
+                      <u>
+                        <strong>{itemUnit}</strong>
+                      </u>
+                    </td>
+                  </tr>
+                </tbody>
               </table>
               <>
                 <CForm
@@ -701,7 +714,7 @@ const Item = ({ pageName }) => {
                       key={1}
                       onClick={async () => {
                         closeMenu()
-
+                        setToggleViewAll(false) // off togge Switch
                         let stock_item_id = row.original.id
                         const response = await axios.get(
                           ip + 'track_item_quantity/track_quantity/' + stock_item_id,
@@ -724,17 +737,31 @@ const Item = ({ pageName }) => {
               </>
             </CCol>
             <CCol md={6}>
-              <MaterialReactTable
-                columns={tractItemQuantityColumns}
-                data={tractItemQuantity}
-                // enableColumnFilterModes
-                // enableColumnOrdering
-                // enableGrouping
-                // enablePinning
-                // enableColumnResizing
-                initialState={{ density: 'compact' }}
-                positionToolbarAlertBanner="bottom"
-              />
+              <CRow className="mb-3">
+                <CCol sm={7}>
+                  <h5 id="traffic" className="card-title mb-0">
+                    Track Item Quantity
+                  </h5>
+                </CCol>
+                <CCol sm={5} className="d-none d-md-block">
+                  <CFormSwitch
+                    label="View All"
+                    onChange={handleSwitchToggle} // Attach the event handler
+                    checked={isToggleViewAll} // Pass the state variable to control the switch state
+                  />
+                </CCol>
+              </CRow>
+
+              <CRow>
+                <CCol sm={12}>
+                  <MaterialReactTable
+                    columns={tractItemQuantityColumns}
+                    data={tractItemQuantity}
+                    initialState={{ density: 'compact' }}
+                    positionToolbarAlertBanner="bottom"
+                  />
+                </CCol>
+              </CRow>
             </CCol>
           </CRow>
         </CModalBody>
