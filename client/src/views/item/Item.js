@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   CButton,
   CCard,
@@ -15,7 +16,7 @@ import {
   CModalTitle,
   CRow,
 } from '@coreui/react'
-import { faPlusCircle } from '@fortawesome/free-solid-svg-icons'
+import { faFileAlt, faPlusCircle } from '@fortawesome/free-solid-svg-icons'
 import GetErrorMessage from 'src/helper/GetErrorMessage'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -30,6 +31,7 @@ import FormatDate from 'src/helper/FormatDate'
 import ConvertToTitleCase from 'src/helper/ConvertToTitleCase'
 
 const Item = ({ pageName }) => {
+  const navigate = useNavigate()
   const api = 'item'
   const [data, setData] = useState([])
   const [itemName, setItemName] = useState('')
@@ -102,6 +104,10 @@ const Item = ({ pageName }) => {
     setNewDataFormModalVisible(true)
     setValidated(false)
     setSelectedItemId(null)
+  }
+
+  const handleReport = () => {
+    navigate('/item/report', { replace: false })
   }
 
   const handleSubmit = async (event) => {
@@ -377,6 +383,16 @@ const Item = ({ pageName }) => {
           <CCardHeader>
             <strong>{pageName}</strong>
             <CButton
+              size="sm"
+              color="success"
+              variant="outline"
+              className="float-end mx-1"
+              onClick={handleReport}
+            >
+              <FontAwesomeIcon icon={faFileAlt} /> Report
+            </CButton>
+            <CButton
+              size="sm"
               color="primary"
               variant="outline"
               className="float-end mx-1"

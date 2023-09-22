@@ -173,14 +173,6 @@ const BorrowedItem = ({ pageName }) => {
         <CCard className="mb-4">
           <CCardHeader>
             <strong>{pageName}</strong>
-            {/* <CButton
-              color="primary"
-              variant="outline"
-              className="float-end mx-1"
-              onClick={handleAdd}
-            >
-              <FontAwesomeIcon icon={faPlusCircle} /> Add New Data
-            </CButton> */}
           </CCardHeader>
           <CCardBody>
             <>

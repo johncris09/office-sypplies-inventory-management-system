@@ -157,6 +157,7 @@ const Borrower = ({ pageName }) => {
           <CCardHeader>
             <strong>{pageName}</strong>
             <CButton
+              size="sm"
               color="primary"
               variant="outline"
               className="float-end mx-1"
