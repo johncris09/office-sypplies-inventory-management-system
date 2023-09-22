@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 18, 2023 at 12:22 AM
+-- Generation Time: Sep 22, 2023 at 05:19 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -63,12 +63,9 @@ CREATE TABLE `item` (
 --
 
 INSERT INTO `item` (`id`, `name`, `unit`) VALUES
-(1, 'Item1', 'packs'),
-(2, 'Item2', 'packs'),
-(4, 'a', 'pcs'),
-(7, '1', 'packs'),
-(9, 'B', 'pcs'),
-(10, 'Item3', 'pcs');
+(1, 'Item1', 'pcs'),
+(2, 'Item2', 'pcs'),
+(3, 'Item3', 'pcs');
 
 -- --------------------------------------------------------
 
@@ -88,14 +85,32 @@ CREATE TABLE `item_stock` (
 --
 
 INSERT INTO `item_stock` (`id`, `item_id`, `quantity_added`, `date_added`) VALUES
-(1, 1, 47, '2023-01-14'),
-(2, 1, 40, '2023-04-14'),
-(3, 2, 35, '2023-01-14'),
-(4, 4, 0, '2023-09-15'),
-(5, 9, 5, '2023-01-15'),
-(6, 9, 9, '2023-03-14'),
-(7, 10, 1, '2023-05-15'),
-(8, 10, 5, '2023-09-15');
+(1, 1, 6, '2023-01-21'),
+(2, 1, 30, '2023-03-21'),
+(3, 2, 12, '2023-01-21');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `track_item_quantity`
+--
+
+CREATE TABLE `track_item_quantity` (
+  `id` int(11) NOT NULL,
+  `item_stock_id` int(11) NOT NULL,
+  `borrower_id` int(11) DEFAULT NULL,
+  `borrowed_quantity` int(11) NOT NULL,
+  `date_borrowed` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `track_item_quantity`
+--
+
+INSERT INTO `track_item_quantity` (`id`, `item_stock_id`, `borrower_id`, `borrowed_quantity`, `date_borrowed`) VALUES
+(1, 1, 2, 2, '2023-09-22 08:37:06'),
+(2, 3, 9, 3, '2023-09-22 08:40:32'),
+(3, 1, 9, 2, '2023-09-22 08:40:32');
 
 -- --------------------------------------------------------
 
@@ -116,17 +131,9 @@ CREATE TABLE `transaction` (
 --
 
 INSERT INTO `transaction` (`id`, `item_id`, `borrower_id`, `quantity_borrowed`, `date_borrowed`) VALUES
-(1, 1, 8, 1, '2023-09-10 03:51:38'),
-(2, 2, 2, 1, '2023-09-14 03:51:38'),
-(3, 2, 4, 1, '2023-09-14 05:19:55'),
-(4, 1, 9, 1, '2023-09-12 05:31:04'),
-(5, 2, 4, 12, '2023-09-15 01:14:19'),
-(6, 2, 7, 1, '2023-09-15 03:11:03'),
-(7, 1, 7, 1, '2023-09-15 03:11:03'),
-(8, 9, 1, 6, '2023-09-15 08:16:29'),
-(9, 10, 8, 1, '2023-09-15 08:20:10'),
-(10, 10, 7, 1, '2023-09-15 08:20:29'),
-(11, 10, 9, 1, '2023-09-15 08:20:54');
+(1, 1, 2, 2, '2023-09-22 00:37:06'),
+(2, 2, 9, 3, '2023-09-22 00:40:32'),
+(3, 1, 9, 2, '2023-09-22 00:40:32');
 
 -- --------------------------------------------------------
 
@@ -179,6 +186,14 @@ ALTER TABLE `item_stock`
   ADD KEY `product_id` (`item_id`);
 
 --
+-- Indexes for table `track_item_quantity`
+--
+ALTER TABLE `track_item_quantity`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `borrower_id` (`borrower_id`),
+  ADD KEY `item_stock_id` (`item_stock_id`);
+
+--
 -- Indexes for table `transaction`
 --
 ALTER TABLE `transaction`
@@ -207,19 +222,25 @@ ALTER TABLE `borrower`
 -- AUTO_INCREMENT for table `item`
 --
 ALTER TABLE `item`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `item_stock`
 --
 ALTER TABLE `item_stock`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `track_item_quantity`
+--
+ALTER TABLE `track_item_quantity`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `transaction`
 --
 ALTER TABLE `transaction`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -236,6 +257,13 @@ ALTER TABLE `users`
 --
 ALTER TABLE `item_stock`
   ADD CONSTRAINT `item_stock_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `item` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `track_item_quantity`
+--
+ALTER TABLE `track_item_quantity`
+  ADD CONSTRAINT `track_item_quantity_ibfk_1` FOREIGN KEY (`borrower_id`) REFERENCES `borrower` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `track_item_quantity_ibfk_2` FOREIGN KEY (`item_stock_id`) REFERENCES `item_stock` (`id`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `transaction`
