@@ -30,7 +30,7 @@ const Dashboard = ({ pageName, userInfo }) => {
   const [borrowerData, setBorrowerData] = useState([])
   const [rowSelection, setRowSelection] = useState({})
   const [validated, setValidated] = useState(false)
-  const [selectedBorrower, setSelectedBorrower] = useState(2)
+  const [selectedBorrower, setSelectedBorrower] = useState('')
   const [quantityInput, setQuantityInput] = useState({})
   const [borrowerBorrowedItem, setBorrowerBorrowedItem] = useState([])
   const [itemQuantities, setItemQuantities] = useState({})
@@ -148,19 +148,19 @@ const Dashboard = ({ pageName, userInfo }) => {
 
           await axios.post(ip + 'transaction', borrowedItemsWithQuantities)
 
-          // Swal.fire({
-          //   title: 'Success',
-          //   text: 'Item Borrowed Successfully!',
-          //   icon: 'success',
-          //   confirmButtonColor: '#3085d6',
-          //   confirmButtonText: 'Ok',
-          // }).then(async (result) => {
-          //   if (result.isConfirmed) {
-          //     setSelectedBorrower('')
-          //     setBorrowedItem([])
-          //     setRowSelection({})
-          //   }
-          // })
+          Swal.fire({
+            title: 'Success',
+            text: 'Item Borrowed Successfully!',
+            icon: 'success',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Ok',
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              setSelectedBorrower('')
+              setBorrowedItem([])
+              setRowSelection({})
+            }
+          })
         }
 
         // setValidated(true)

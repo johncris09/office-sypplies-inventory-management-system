@@ -27,8 +27,7 @@ router.get("/", async (req, res, next) => {
     if (err) throw err;
     res.json(result);
   });
-}); 
-
+});
 
 router.get("/getBorrowerBorrowedItem/:borrower_id", async (req, res, next) => {
   try {
@@ -73,75 +72,161 @@ router.get("/fetchItemBorrowedByDate", async (req, res, next) => {
     let item_id = req.query.item_id;
     let target_month = req.query.month;
     let target_year = req.query.year;
+
     const q = `
-    SELECT 
-        dates.date as date_borrowed,
-        SUM(IFNULL(t.borrowed_quantity, 0)) AS quantity
-    FROM (
-        SELECT
-            DATE_ADD(
-                LAST_DAY(CONCAT(${target_year}, '-', LPAD(${target_month}, 2, '0'), '-01')),
-                INTERVAL 1 DAY
-            ) - INTERVAL n DAY AS DATE
-        FROM (
-            SELECT n + 1 AS n
-            FROM (
-                SELECT units.n + tens.n * 10 AS n
-                FROM (
-                    SELECT 0 AS n
-                    UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
-                    UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6
-                    UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9
-                ) units
-                CROSS JOIN (
-                    SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2
-                    UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
-                    UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8
-                    UNION ALL SELECT 9
-                ) tens
-            ) numbers
-            WHERE n BETWEEN 0 
-            AND DAY(LAST_DAY(CONCAT(${target_year}, '-', LPAD(${target_month}, 2, '0'), '-01')))
-        ) date_series
-    ) dates
-    LEFT JOIN track_item_quantity as t ON dates.date = DATE(t.date_borrowed) 
-    LEFT JOIN item_stock as istock ON istock.id = t.item_stock_id 
-    LEFT JOIN item as i ON i.id = istock.item_id 
-    WHERE MONTH(dates.date) = ${target_month} AND YEAR(dates.date) = ${target_year} and ${item_id ? `istock.item_id = ${item_id}` : "true"}
-    GROUP BY dates.date
-    ORDER BY dates.date;  `;
+  SELECT
+  transaction.item_id,
+      dates.date as date_borrowed,
+      SUM(
+          IFNULL(
+              transaction.quantity_borrowed,
+              0
+          )
+      ) AS quantity
+  FROM
+      (
+      SELECT
+          DATE_ADD(
+              LAST_DAY(CONCAT(${target_year}, '-', LPAD(${target_month}, 2, '0'), '-01')),
+              INTERVAL 1 DAY
+          ) - INTERVAL n DAY AS DATE
+      FROM
+          (
+          SELECT
+              n + 1 AS n
+          FROM
+              (
+              SELECT
+                  units.n + tens.n * 10 AS n
+              FROM
+                  (
+                  SELECT
+                      0 AS n
+                  UNION ALL
+                  SELECT
+                      1
+                  UNION ALL
+                  SELECT
+                      2
+                  UNION ALL
+                  SELECT
+                      3
+                  UNION ALL
+                  SELECT
+                      4
+                  UNION ALL
+                  SELECT
+                      5
+                  UNION ALL
+                  SELECT
+                      6
+                  UNION ALL
+                  SELECT
+                      7
+                  UNION ALL
+                  SELECT
+                      8
+                  UNION ALL
+                  SELECT
+                      9
+                  ) units
+                  CROSS JOIN(
+                      SELECT
+                          0 AS n
+                      UNION ALL
+                      SELECT
+                          1
+                      UNION ALL
+                      SELECT
+                          2
+                      UNION ALL
+                      SELECT
+                          3
+                      UNION ALL
+                      SELECT
+                          4
+                      UNION ALL
+                      SELECT
+                          5
+                      UNION ALL
+                      SELECT
+                          6
+                      UNION ALL
+                      SELECT
+                          7
+                      UNION ALL
+                      SELECT
+                          8
+                      UNION ALL
+                      SELECT
+                          9
+                  ) tens
+              ) numbers
+          WHERE
+              n BETWEEN 0 
+              AND DAY(LAST_DAY(CONCAT(${target_year}, '-', LPAD(${target_month}, 2, '0'), '-01')))
+      ) date_series
+  ) dates
+  LEFT JOIN transaction ON dates.date = DATE(transaction.date_borrowed) 
+  AND ${item_id ? `transaction.item_id = ${item_id}` : "true"}
+  WHERE
+      MONTH(dates.date) = ${target_month}
+      AND YEAR(dates.date) = ${target_year}
+  GROUP BY
+      dates.date
+  ORDER BY
+      dates.date;`;
 
-        db.query(q, (err, results) => {
-          if (err) {
-            console.error("Error fetching data:", err);
-            res.status(500).json({ error: "Error fetching data" });
-            return;
-          }
-
-          res.json(results);
-        });
-      } catch (error) {
-        console.error("Error:", error);
+    db.query(q, (err, results) => {
+      if (err) {
+        console.error("Error fetching data:", err);
         res.status(500).json({ error: "Error fetching data" });
+        return;
       }
+
+      res.json(results);
     });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Error fetching data" });
+  }
+});
 
 router.post("/", async (req, res, next) => {
   try {
-    let borrowedItemDetails = req.body; 
+    let borrowedItemDetails = req.body;
+
     for (const borrowedItem of borrowedItemDetails) {
       const { item_id, quantity, borrower } = borrowedItem;
       await updateItemStockAndTrack(item_id, quantity, borrower);
+
+      const q = `INSERT INTO transaction 
+      SET item_id = ?, borrower_id = ?, quantity_borrowed = ?`;
+
+      db.query(q, [item_id, borrower, quantity], (err, result) => {
+        if (err) {
+          console.error("Error inserting data:", err);
+          res.status(500).json({ error: err.sqlMessage });
+          return;
+        }
+
+        // console.log("Data inserted successfully:", result);
+      });
     }
+
     res.status(201).json({ message: "Data inserted successfully" });
-    console.log('Data inserted successfully')
+    // console.log('Data inserted successfully')
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Error inserting data" });
   }
 });
 
-async function updateItemStockAndTrack(item_id, borrowed_quantity, borrower_id) {
+async function updateItemStockAndTrack(
+  item_id,
+  borrowed_quantity,
+  borrower_id
+) {
   let remainingBorrowedQuantity = borrowed_quantity;
 
   while (remainingBorrowedQuantity > 0) {
