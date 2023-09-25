@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import {
   CCol,
   CContainer,
-  CFooter,
   CImage,
   CRow,
   CTable,
@@ -71,39 +70,61 @@ const TopFivePrintPerJudge = () => {
         </pre>
       </div>
       <hr />
+      <div className="text-center my-2">
+        <pre>
+          <strong>Certification</strong>
+        </pre>
+      </div>
       <CContainer>
-        <CTable striped bordered small responsive className=" mb-5 mt-5" borderColor="dark">
-          <CTableHead>
-            <CTableRow className="text-center">
-              <CTableHeaderCell scope="col">#</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Item</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Avaiable</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Total Quantity</CTableHeaderCell>
-              <CTableHeaderCell scope="col">Unit</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {data.map((row, rowIndex) => (
-              <CTableRow key={rowIndex} className="text-center text-sm">
-                <CTableDataCell>{rowIndex + 1}</CTableDataCell>
-                <CTableDataCell>{row.item_name}</CTableDataCell>
-                <CTableDataCell>{row.available_stock}</CTableDataCell>
-                <CTableDataCell>{row.total_quantity}</CTableDataCell>
-                <CTableDataCell>{row.unit}</CTableDataCell>
-              </CTableRow>
-            ))}
-          </CTableBody>
-        </CTable>
+        <CRow>
+          <CCol>
+            <CTable striped bordered small responsive className=" mb-5 mt-2" borderColor="dark">
+              <CTableHead>
+                <CTableRow className="text-center">
+                  <CTableHeaderCell scope="col">#</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Item</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Avaiable</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Total Quantity</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Unit</CTableHeaderCell>
+                </CTableRow>
+              </CTableHead>
+              <CTableBody>
+                {data.map((row, rowIndex) => (
+                  <CTableRow key={rowIndex} className="text-center text-sm">
+                    <CTableDataCell>{rowIndex + 1}</CTableDataCell>
+                    <CTableDataCell>{row.item_name}</CTableDataCell>
+                    <CTableDataCell>{row.available_stock}</CTableDataCell>
+                    <CTableDataCell>{row.total_quantity}</CTableDataCell>
+                    <CTableDataCell>{row.unit}</CTableDataCell>
+                  </CTableRow>
+                ))}
+              </CTableBody>
+            </CTable>
+          </CCol>
+        </CRow>
+        <CRow className="mt-5">
+          <CCol md={9}> </CCol>
+          <CCol md={3}>
+            <div>
+              <pre>
+                <span className="mb-2">Prepared by:</span>
+                <br />
+                <br />
+                <span style={{ marginLeft: '100px' }}>
+                  <strong>
+                    <u>GAY C. MONDOY</u>
+                  </strong>
+                </span>
+                <br />
+                <span style={{ marginLeft: '130px' }} className="text-sm">
+                  SMDO
+                </span>
+                <br />
+              </pre>
+            </div>
+          </CCol>
+        </CRow>
       </CContainer>
-
-      <CFooter className="bg-transparent footer fixed-bottom" style={{ fontSize: 12 }}>
-        <div>
-          <span>Developed by: OCM MIS Division &copy; {new Date().getFullYear()}</span>
-        </div>
-        <div>
-          <span>Printed on {formattedDate}</span>
-        </div>
-      </CFooter>
     </>
   )
 }
