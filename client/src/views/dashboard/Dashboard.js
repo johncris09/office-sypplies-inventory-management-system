@@ -21,6 +21,7 @@ import { IconButton, Tooltip } from '@mui/material'
 import { Delete } from '@mui/icons-material'
 import FormatDate from 'src/helper/FormatDate'
 import { CChartBar } from '@coreui/react-chartjs'
+import GetErrorMessage from 'src/helper/GetErrorMessage'
 
 const Dashboard = ({ pageName, userInfo }) => {
   const navigate = useNavigate()
@@ -35,12 +36,17 @@ const Dashboard = ({ pageName, userInfo }) => {
   const [borrowerBorrowedItem, setBorrowerBorrowedItem] = useState([])
   const [itemQuantities, setItemQuantities] = useState({})
   const [chartItemBorrowedByDate, setChartItemBorrowedByDate] = useState([])
+  const [itemHorizontalChart, setItemHorizontalChart] = useState([])
   const years = Array.from({ length: 3 }, (_, index) => 2023 - index)
   const currentDate = new Date()
   const currentMonthNumber = currentDate.getMonth() + 1
 
-  const [filderData, setFilderData] = useState({
+  const [filterItemBorrowedByDateData, setFilterItemBorrowedByDateData] = useState({
     item_id: '',
+    month: currentMonthNumber,
+    year: years[0],
+  })
+  const [fiterItemReleaseQuantityData, setFiterItemReleaseQuantityData] = useState({
     month: currentMonthNumber,
     year: years[0],
   })
@@ -72,16 +78,18 @@ const Dashboard = ({ pageName, userInfo }) => {
     }
     fetchItem()
     fetchBorrower()
-    fetchItemBorrowedByDate(filderData)
-  }, [filderData, itemData])
+    fetchItemBorrowedByDate(filterItemBorrowedByDateData)
+    fetchItemReleasedQuantityData(fiterItemReleaseQuantityData)
+  }, [filterItemBorrowedByDateData, itemData])
+  // }, [])
 
   const handleItemQuantityRef = (index, ref) => {
     itemQuantityRefs.current[index] = ref
   }
-  const fetchItemBorrowedByDate = async (filderData) => {
+  const fetchItemBorrowedByDate = async (filterItemBorrowedByDateData) => {
     try {
       const response = await axios.get(ip + 'transaction/fetchItemBorrowedByDate', {
-        params: filderData,
+        params: filterItemBorrowedByDateData,
       })
       const formattedData = response.data.map((item) => ({
         ...item,
@@ -104,7 +112,7 @@ const Dashboard = ({ pageName, userInfo }) => {
         datasets: [
           {
             label: 'Total',
-            backgroundColor: '#799ff8',
+            backgroundColor: '#0d6efd',
             data: chartData,
           },
         ],
@@ -113,6 +121,43 @@ const Dashboard = ({ pageName, userInfo }) => {
       console.error('Error fetching data:', error)
     }
   }
+
+  const fetchItemReleasedQuantityData = async (fiterItemReleaseQuantityData) => {
+    try {
+      const response = await axios.get(ip + 'transaction/fetchItemReleasedQuantityData', {
+        params: fiterItemReleaseQuantityData,
+      })
+      const formattedData = response.data.map((item) => ({
+        ...item,
+        date_borrowed: FormatDate(item.date_borrowed),
+      }))
+
+      const borrowedItemByDate = Object.values(formattedData)
+      const label = []
+      const chartData = []
+      let index = 0
+      for (const item of borrowedItemByDate) {
+        const { name, quantity_borrowed } = item
+        label[index] = name
+        chartData[index] = quantity_borrowed
+        index++
+      }
+
+      setItemHorizontalChart({
+        labels: label,
+        datasets: [
+          {
+            label: 'Total',
+            backgroundColor: '#fd7e14',
+            data: chartData,
+          },
+        ],
+      })
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
+  }
+
   const fetchItem = async () => {
     try {
       const response = await axios.get(ip + 'item/userItem')
@@ -166,13 +211,12 @@ const Dashboard = ({ pageName, userInfo }) => {
         // setValidated(true)
       }
     } catch (error) {
-      console.error('There was an error')
       // Show error message
-      // Swal.fire({
-      //   title: 'Error!',
-      //   html: GetErrorMessage(error),
-      //   icon: 'error',
-      // })
+      Swal.fire({
+        title: 'Error!',
+        html: GetErrorMessage(error),
+        icon: 'error',
+      })
     }
   }
 
@@ -226,6 +270,16 @@ const Dashboard = ({ pageName, userInfo }) => {
           : item,
       ),
     )
+  }
+
+  const handleFilterItemBorrowedDate = (e) => {
+    const { name, value } = e.target
+    setFilterItemBorrowedByDateData({ ...filterItemBorrowedByDateData, [name]: value })
+  }
+
+  const handleItemReleaseQuantityChange = (e) => {
+    const { name, value } = e.target
+    setFiterItemReleaseQuantityData({ ...filterItemBorrowedByDateData, [name]: value })
   }
 
   const borrowedColumns = [
@@ -283,11 +337,6 @@ const Dashboard = ({ pageName, userInfo }) => {
       header: 'Unit',
     },
   ]
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target
-    setFilderData({ ...filderData, [name]: value })
-  }
 
   return userInfo.role_type === 'User' ? (
     <>
@@ -501,9 +550,6 @@ const Dashboard = ({ pageName, userInfo }) => {
       <CRow>
         <CCol md={12}>
           <CCard className="mb-4">
-            {/* <CCardHeader>
-              <strong>Total Borrowed Item By Month </strong>
-            </CCardHeader> */}
             <CCardBody>
               <CRow>
                 <CCol sm={7}>
@@ -515,9 +561,9 @@ const Dashboard = ({ pageName, userInfo }) => {
                   <CInputGroup size="sm">
                     <CFormSelect
                       name="item_id"
-                      value={filderData.item_id}
+                      value={filterItemBorrowedByDateData.item_id}
                       size="sm"
-                      onChange={handleFilterChange}
+                      onChange={handleFilterItemBorrowedDate}
                     >
                       <option value="">All Item</option>
                       {itemData.map((item) => (
@@ -528,9 +574,9 @@ const Dashboard = ({ pageName, userInfo }) => {
                     </CFormSelect>
                     <CFormSelect
                       name="month"
-                      value={filderData.month}
+                      value={filterItemBorrowedByDateData.month}
                       size="sm"
-                      onChange={handleFilterChange}
+                      onChange={handleFilterItemBorrowedDate}
                     >
                       {months.map((month, index) => (
                         <option key={index} value={index + 1}>
@@ -540,9 +586,9 @@ const Dashboard = ({ pageName, userInfo }) => {
                     </CFormSelect>
                     <CFormSelect
                       name="year"
-                      value={filderData.year}
+                      value={filterItemBorrowedByDateData.year}
                       size="sm"
-                      onChange={handleFilterChange}
+                      onChange={handleFilterItemBorrowedDate}
                     >
                       {years.map((year) => (
                         <option key={year} value={year}>
@@ -550,27 +596,52 @@ const Dashboard = ({ pageName, userInfo }) => {
                         </option>
                       ))}
                     </CFormSelect>
-                    {/* <CInputGroupText component="label" htmlFor="inputGroupSelect02">
-                      Options
-                    </CInputGroupText> */}
                   </CInputGroup>
-                  {/* 
-                  <CButtonGroup className="float-end me-3">
-                    {['Day', 'Month', 'Year'].map((value) => (
-                      <CButton
-                        color="outline-secondary"
-                        key={value}
-                        className="mx-0"
-                        active={value === 'Day'}
-                      >
-                        {value}
-                      </CButton>
-                    ))}
-                  </CButtonGroup> */}
                 </CCol>
               </CRow>
-
-              <CChartBar height={150} data={chartItemBorrowedByDate} labels="dog-pound" />
+              <CChartBar height={150} data={chartItemBorrowedByDate} />
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol md={12}>
+          <CCard className="mb-4">
+            <CCardBody>
+              <CRow>
+                <CCol sm={7}>
+                  <h4 id="traffic" className="card-title mb-0">
+                    Total Item Released Quantity
+                  </h4>
+                </CCol>
+                <CCol sm={5} className="d-none d-md-block">
+                  <CInputGroup size="sm">
+                    <CFormSelect
+                      name="month"
+                      value={fiterItemReleaseQuantityData.month}
+                      size="sm"
+                      onChange={handleItemReleaseQuantityChange}
+                    >
+                      {months.map((month, index) => (
+                        <option key={index} value={index + 1}>
+                          {month}
+                        </option>
+                      ))}
+                    </CFormSelect>
+                    <CFormSelect
+                      name="year"
+                      value={fiterItemReleaseQuantityData.year}
+                      size="sm"
+                      onChange={handleItemReleaseQuantityChange}
+                    >
+                      {years.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </CFormSelect>
+                  </CInputGroup>
+                </CCol>
+              </CRow>
+              <CChartBar height={60} data={itemHorizontalChart} options={{ indexAxis: 'y' }} />
             </CCardBody>
           </CCard>
         </CCol>
