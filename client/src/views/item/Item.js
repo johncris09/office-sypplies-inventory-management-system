@@ -69,7 +69,6 @@ const Item = ({ pageName }) => {
   }
 
   const fetchItemStockData = async (item_id) => {
-    console.log(item_id)
     try {
       if (item_id) {
         const response = await axios.get(ip + 'item_stock/item/' + item_id)
