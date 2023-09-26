@@ -86,8 +86,6 @@ router.post("/", async (req, res, next) => {
         res.status(500).json({ error: err.sqlMessage });
         return;
       }
-
-      console.log("Data inserted successfully:", result);
       res.status(201).json({ message: "Data inserted successfully" });
     });
   } catch (error) {
@@ -108,8 +106,6 @@ router.put("/", async (req, res, next) => {
         res.status(500).json({ error: "Error updating data" });
         return;
       }
-
-      console.log("Data updated successfully:", result);
       res.status(200).json({ message: "Data updated successfully" });
     });
   } catch (error) {
@@ -128,8 +124,6 @@ router.delete("/", async (req, res, next) => {
         res.status(500).json({ error: "Error deleting data" });
         return;
       }
-
-      console.log("Data deleted successfully:", result);
       res.status(200).json({ message: "Data deleted successfully" });
     });
   } catch (error) {

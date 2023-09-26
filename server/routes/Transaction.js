@@ -212,7 +212,6 @@ router.get("/fetchItemReleasedQuantityData", async (req, res, next) => {
         i.name
     ORDER BY
         i.name;`;
-        console.log( q)
 
     db.query(q, (err, results) => {
       if (err) {
@@ -246,13 +245,10 @@ router.post("/", async (req, res, next) => {
           res.status(500).json({ error: err.sqlMessage });
           return;
         }
-
-        // console.log("Data inserted successfully:", result);
       });
     }
 
     res.status(201).json({ message: "Data inserted successfully" });
-    // console.log('Data inserted successfully')
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Error inserting data" });
