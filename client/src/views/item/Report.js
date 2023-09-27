@@ -27,21 +27,11 @@ const TopFivePrintPerJudge = () => {
     try {
       const response = await axios.get(ip + api)
       setData(response.data)
+      console.info(response.data)
     } catch (error) {
       console.error('Error fetching data:', error)
     }
   }
-
-  const formattedDate = new Date().toLocaleString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    hour12: true,
-  })
   return (
     <>
       <CRow className="justify-content-around evenly text-center mt-5 mb-4">
@@ -72,7 +62,7 @@ const TopFivePrintPerJudge = () => {
       <hr />
       <div className="text-center my-2">
         <pre>
-          <strong>Certification</strong>
+          <strong>CERTIFICATION</strong>
         </pre>
       </div>
       <CContainer>
@@ -83,8 +73,9 @@ const TopFivePrintPerJudge = () => {
                 <CTableRow className="text-center">
                   <CTableHeaderCell scope="col">#</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Item</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Avaiable</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Total Quantity</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Available</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Consume</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Total</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Unit</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
@@ -94,6 +85,7 @@ const TopFivePrintPerJudge = () => {
                     <CTableDataCell>{rowIndex + 1}</CTableDataCell>
                     <CTableDataCell>{row.item_name}</CTableDataCell>
                     <CTableDataCell>{row.available_stock}</CTableDataCell>
+                    <CTableDataCell>{row.borrowed_quantity}</CTableDataCell>
                     <CTableDataCell>{row.total_quantity}</CTableDataCell>
                     <CTableDataCell>{row.unit}</CTableDataCell>
                   </CTableRow>
@@ -102,28 +94,22 @@ const TopFivePrintPerJudge = () => {
             </CTable>
           </CCol>
         </CRow>
-        <CRow className="mt-5">
-          <CCol md={9}> </CCol>
-          <CCol md={3}>
-            <div>
-              <pre>
-                <span className="mb-2">Prepared by:</span>
-                <br />
-                <br />
-                <span style={{ marginLeft: '100px' }}>
-                  <strong>
-                    <u>GAY C. MONDOY</u>
-                  </strong>
-                </span>
-                <br />
-                <span style={{ marginLeft: '130px' }} className="text-sm">
-                  SMDO
-                </span>
-                <br />
-              </pre>
-            </div>
-          </CCol>
-        </CRow>
+        <div className="text-left" style={{ 'margin-top': '20px' }}>
+          <pre>
+            <span className="mb-2">Prepared by:</span>
+            <br />
+            <br />
+            <span style={{ marginLeft: '100px' }}>
+              <strong>
+                <u>GAY C. MONDOY</u>
+              </strong>
+            </span>
+            <br />
+            <span style={{ marginLeft: '10px' }} className="text-sm">
+              Supervising Manpower Development Officer
+            </span>
+          </pre>
+        </div>
       </CContainer>
     </>
   )
