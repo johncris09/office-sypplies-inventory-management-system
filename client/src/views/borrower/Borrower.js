@@ -141,7 +141,7 @@ const Borrower = ({ pageName }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
+    setFormData({ ...formData, [name]: ConvertToTitleCase(value) })
   }
   const columns = [
     {
