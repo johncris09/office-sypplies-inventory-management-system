@@ -18,14 +18,14 @@ const _nav = (userInfo) => {
     },
     {
       component: CNavItem,
-      name: 'Borrowed Item(s)',
-      to: '/borrowed_item',
+      name: 'Released Item(s)',
+      to: '/released_item',
       icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
     },
     {
       component: CNavItem,
-      name: 'Borrower',
-      to: '/borrower',
+      name: 'Consumer',
+      to: '/consumer',
       icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
     },
     {
@@ -46,14 +46,14 @@ const _nav = (userInfo) => {
       },
       {
         component: CNavItem,
-        name: 'Borrowed Item(s)',
-        to: '/borrowed_item',
+        name: 'Released Item(s)',
+        to: '/released_item',
         icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
-        name: 'Borrower',
-        to: '/borrower',
+        name: 'Consumer',
+        to: '/consumer',
         icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
       },
     ]
