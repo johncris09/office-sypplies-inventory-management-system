@@ -283,167 +283,159 @@ const User = () => {
         </CCard>
       </CCol>
       {/* Add New Data */}
-      <Draggable
-        handle=".modal-header"
-        position={modalPosition}
-        onStop={(e, data) => {
-          setModalPosition({ x: data.x, y: data.y })
-        }}
+      <CModal
+        alignment="center"
+        visible={newDataFormModalVisible}
+        onClose={() => setNewDataFormModalVisible(false)}
+        backdrop="static"
+        keyboard={false}
+        size="lg"
       >
-        <CModal
-          alignment="center"
-          visible={newDataFormModalVisible}
-          onClose={() => setNewDataFormModalVisible(false)}
-          backdrop="static"
-          keyboard={false}
-          size="lg"
-        >
-          <CModalHeader>
-            <CModalTitle>{editMode ? 'Edit Data' : 'Add New Data'}</CModalTitle>
-          </CModalHeader>
-          <CModalBody>
-            <RequiredNote />
-            <CForm
-              className="row g-3 needs-validation"
-              noValidate
-              validated={validated}
-              onSubmit={handleSubmit}
-            >
-              <CCol md={12}>
-                <CFormInput
-                  type="text"
-                  feedbackInvalid="Name is required"
-                  id="name"
-                  label={
-                    <>
-                      Name
-                      <span className="text-warning">
-                        <strong>*</strong>
-                      </span>
-                    </>
-                  }
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </CCol>
-              <CCol md={12}>
-                <CFormInput
-                  type="email"
-                  feedbackInvalid="Email is required"
-                  id="email"
-                  label={
-                    <>
-                      Email
-                      <span className="text-warning">
-                        <strong>*</strong>
-                      </span>
-                    </>
-                  }
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </CCol>
-              <CCol md={12}>
-                <CFormInput
-                  type="text"
-                  feedbackInvalid="Username is required"
-                  id="date"
-                  label={
-                    <>
-                      Username
-                      <span className="text-warning">
-                        <strong>*</strong>
-                      </span>
-                    </>
-                  }
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                />
-              </CCol>
-              <>
-                {isPasswordFieldVisible && (
-                  <CCol md={12}>
-                    <CFormInput
-                      type="password"
-                      feedbackInvalid="Password is required"
-                      id="date"
-                      label={
-                        <>
-                          Password
-                          <span className="text-warning">
-                            <strong>*</strong>
-                          </span>
-                        </>
-                      }
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                    />
-                  </CCol>
-                )}
-              </>
-              <CCol md={12}>
-                <CFormSelect
-                  feedbackInvalid="User's Role Type is required"
-                  id="role-type"
-                  label={
-                    <>
-                      User&apos;s Role Type
-                      <span className="text-warning">
-                        <strong>*</strong>
-                      </span>
-                    </>
-                  }
-                  name="role_type"
-                  value={formData.role_type}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Choose...</option>
-                  <option value="User">User</option>
-                  <option value="Admin">Admin</option>
-                  <option value="SuperAdmin">Super Admin</option>
-                </CFormSelect>
-              </CCol>
-              <CCol md={12}>
-                <CFormSelect
-                  feedbackInvalid="Status is required"
-                  id="status"
-                  label={
-                    <>
-                      Status
-                      <span className="text-warning">
-                        <strong>*</strong>
-                      </span>
-                    </>
-                  }
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Choose...</option>
-                  <option value="User">Pending</option>
-                  <option value="Admin">Approved</option>
-                </CFormSelect>
-              </CCol>
-              <hr />
-              <CCol xs={12}>
-                <CButton color="primary" type="submit" className="float-end">
-                  {editMode ? 'Update' : 'Submit form'}
-                </CButton>
-              </CCol>
-            </CForm>
-          </CModalBody>
-        </CModal>
-      </Draggable>
+        <CModalHeader>
+          <CModalTitle>{editMode ? 'Edit Data' : 'Add New Data'}</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <RequiredNote />
+          <CForm
+            className="row g-3 needs-validation"
+            noValidate
+            validated={validated}
+            onSubmit={handleSubmit}
+          >
+            <CCol md={12}>
+              <CFormInput
+                type="text"
+                feedbackInvalid="Name is required"
+                id="name"
+                label={
+                  <>
+                    Name
+                    <span className="text-warning">
+                      <strong>*</strong>
+                    </span>
+                  </>
+                }
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </CCol>
+            <CCol md={12}>
+              <CFormInput
+                type="email"
+                feedbackInvalid="Email is required"
+                id="email"
+                label={
+                  <>
+                    Email
+                    <span className="text-warning">
+                      <strong>*</strong>
+                    </span>
+                  </>
+                }
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </CCol>
+            <CCol md={12}>
+              <CFormInput
+                type="text"
+                feedbackInvalid="Username is required"
+                id="date"
+                label={
+                  <>
+                    Username
+                    <span className="text-warning">
+                      <strong>*</strong>
+                    </span>
+                  </>
+                }
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
+            </CCol>
+            <>
+              {isPasswordFieldVisible && (
+                <CCol md={12}>
+                  <CFormInput
+                    type="password"
+                    feedbackInvalid="Password is required"
+                    id="date"
+                    label={
+                      <>
+                        Password
+                        <span className="text-warning">
+                          <strong>*</strong>
+                        </span>
+                      </>
+                    }
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                </CCol>
+              )}
+            </>
+            <CCol md={12}>
+              <CFormSelect
+                feedbackInvalid="User's Role Type is required"
+                id="role-type"
+                label={
+                  <>
+                    User&apos;s Role Type
+                    <span className="text-warning">
+                      <strong>*</strong>
+                    </span>
+                  </>
+                }
+                name="role_type"
+                value={formData.role_type}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Choose...</option>
+                <option value="User">User</option>
+                <option value="Admin">Admin</option>
+                <option value="SuperAdmin">Super Admin</option>
+              </CFormSelect>
+            </CCol>
+            <CCol md={12}>
+              <CFormSelect
+                feedbackInvalid="Status is required"
+                id="status"
+                label={
+                  <>
+                    Status
+                    <span className="text-warning">
+                      <strong>*</strong>
+                    </span>
+                  </>
+                }
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Choose...</option>
+                <option value="User">Pending</option>
+                <option value="Admin">Approved</option>
+              </CFormSelect>
+            </CCol>
+            <hr />
+            <CCol xs={12}>
+              <CButton color="primary" type="submit" className="float-end">
+                {editMode ? 'Update' : 'Submit form'}
+              </CButton>
+            </CCol>
+          </CForm>
+        </CModalBody>
+      </CModal>
     </CRow>
   )
 }

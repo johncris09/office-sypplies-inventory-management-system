@@ -233,61 +233,53 @@ const Borrower = ({ pageName }) => {
         </CCard>
       </CCol>
       {/* Add New Data */}
-      <Draggable
-        handle=".modal-header"
-        position={modalPosition}
-        onStop={(e, data) => {
-          setModalPosition({ x: data.x, y: data.y })
-        }}
+      <CModal
+        alignment="center"
+        visible={newDataFormModalVisible}
+        onClose={() => setNewDataFormModalVisible(false)}
+        backdrop="static"
+        keyboard={false}
+        size="lg"
       >
-        <CModal
-          alignment="center"
-          visible={newDataFormModalVisible}
-          onClose={() => setNewDataFormModalVisible(false)}
-          backdrop="static"
-          keyboard={false}
-          size="lg"
-        >
-          <CModalHeader>
-            <CModalTitle>{editMode ? 'Edit Data' : 'Add New Data'}</CModalTitle>
-          </CModalHeader>
-          <CModalBody>
-            <RequiredNote />
-            <CForm
-              className="row g-3 needs-validation"
-              noValidate
-              validated={validated}
-              onSubmit={handleSubmit}
-            >
-              <CCol md={12}>
-                <CFormInput
-                  type="text"
-                  feedbackInvalid="Name is required"
-                  id="name"
-                  label={
-                    <>
-                      Name
-                      <span className="text-warning">
-                        <strong>*</strong>
-                      </span>
-                    </>
-                  }
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </CCol>
-              <hr />
-              <CCol xs={12}>
-                <CButton color="primary" type="submit" className="float-end">
-                  {editMode ? 'Update' : 'Submit form'}
-                </CButton>
-              </CCol>
-            </CForm>
-          </CModalBody>
-        </CModal>
-      </Draggable>
+        <CModalHeader>
+          <CModalTitle>{editMode ? 'Edit Data' : 'Add New Data'}</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <RequiredNote />
+          <CForm
+            className="row g-3 needs-validation"
+            noValidate
+            validated={validated}
+            onSubmit={handleSubmit}
+          >
+            <CCol md={12}>
+              <CFormInput
+                type="text"
+                feedbackInvalid="Name is required"
+                id="name"
+                label={
+                  <>
+                    Name
+                    <span className="text-warning">
+                      <strong>*</strong>
+                    </span>
+                  </>
+                }
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </CCol>
+            <hr />
+            <CCol xs={12}>
+              <CButton color="primary" type="submit" className="float-end">
+                {editMode ? 'Update' : 'Submit form'}
+              </CButton>
+            </CCol>
+          </CForm>
+        </CModalBody>
+      </CModal>
     </CRow>
   )
 }
