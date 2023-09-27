@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 22, 2023 at 05:19 AM
+-- Generation Time: Sep 27, 2023 at 08:14 AM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -55,17 +55,21 @@ INSERT INTO `borrower` (`id`, `name`) VALUES
 CREATE TABLE `item` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `unit` varchar(20) NOT NULL
+  `unit` varchar(20) NOT NULL,
+  `type` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `item`
 --
 
-INSERT INTO `item` (`id`, `name`, `unit`) VALUES
-(1, 'Item1', 'pcs'),
-(2, 'Item2', 'pcs'),
-(3, 'Item3', 'pcs');
+INSERT INTO `item` (`id`, `name`, `unit`, `type`) VALUES
+(1, 'Item1', 'pcs', 1),
+(2, 'Item2', 'pcs', 1),
+(3, 'Item3', 'pcs', 2),
+(4, 'Item4', 'pcs', 1),
+(6, 'Item5', 'pcs', 2),
+(7, 'Asdf', 'packs', 2);
 
 -- --------------------------------------------------------
 
@@ -85,9 +89,9 @@ CREATE TABLE `item_stock` (
 --
 
 INSERT INTO `item_stock` (`id`, `item_id`, `quantity_added`, `date_added`) VALUES
-(1, 1, 6, '2023-01-21'),
+(1, 1, 5, '2023-01-21'),
 (2, 1, 30, '2023-03-21'),
-(3, 2, 12, '2023-01-21');
+(3, 2, 9, '2023-01-21');
 
 -- --------------------------------------------------------
 
@@ -110,7 +114,10 @@ CREATE TABLE `track_item_quantity` (
 INSERT INTO `track_item_quantity` (`id`, `item_stock_id`, `borrower_id`, `borrowed_quantity`, `date_borrowed`) VALUES
 (1, 1, 2, 2, '2023-09-22 08:37:06'),
 (2, 3, 9, 3, '2023-09-22 08:40:32'),
-(3, 1, 9, 2, '2023-09-22 08:40:32');
+(3, 1, 9, 2, '2023-09-22 08:40:32'),
+(4, 3, 8, 2, '2023-09-25 09:08:51'),
+(5, 1, 8, 1, '2023-09-27 14:33:21'),
+(6, 3, 8, 1, '2023-09-27 14:33:41');
 
 -- --------------------------------------------------------
 
@@ -133,7 +140,29 @@ CREATE TABLE `transaction` (
 INSERT INTO `transaction` (`id`, `item_id`, `borrower_id`, `quantity_borrowed`, `date_borrowed`) VALUES
 (1, 1, 2, 2, '2023-09-22 00:37:06'),
 (2, 2, 9, 3, '2023-09-22 00:40:32'),
-(3, 1, 9, 2, '2023-09-22 00:40:32');
+(3, 1, 9, 2, '2023-09-22 00:40:32'),
+(4, 2, 8, 2, '2023-09-25 01:08:51'),
+(5, 1, 8, 1, '2023-09-27 06:33:21'),
+(6, 2, 8, 1, '2023-09-27 06:33:41');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `type`
+--
+
+CREATE TABLE `type` (
+  `id` int(11) NOT NULL,
+  `type` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `type`
+--
+
+INSERT INTO `type` (`id`, `type`) VALUES
+(1, 'Type 1'),
+(2, 'Type 2');
 
 -- --------------------------------------------------------
 
@@ -176,7 +205,8 @@ ALTER TABLE `borrower`
 --
 ALTER TABLE `item`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `name` (`name`);
+  ADD UNIQUE KEY `name` (`name`),
+  ADD KEY `type` (`type`);
 
 --
 -- Indexes for table `item_stock`
@@ -202,6 +232,13 @@ ALTER TABLE `transaction`
   ADD KEY `borrower_id` (`borrower_id`);
 
 --
+-- Indexes for table `type`
+--
+ALTER TABLE `type`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `type` (`type`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -216,13 +253,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `borrower`
 --
 ALTER TABLE `borrower`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `item`
 --
 ALTER TABLE `item`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `item_stock`
@@ -234,13 +271,19 @@ ALTER TABLE `item_stock`
 -- AUTO_INCREMENT for table `track_item_quantity`
 --
 ALTER TABLE `track_item_quantity`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `transaction`
 --
 ALTER TABLE `transaction`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `type`
+--
+ALTER TABLE `type`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -251,6 +294,12 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `item`
+--
+ALTER TABLE `item`
+  ADD CONSTRAINT `item_ibfk_1` FOREIGN KEY (`type`) REFERENCES `type` (`id`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `item_stock`
