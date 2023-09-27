@@ -6,6 +6,7 @@ import tractItemQuantityRoute from "./routes/TrackItemQuantity.js"
 import itemRoute from "./routes/Item.js"
 import itemStockRoute from "./routes/ItemStock.js"
 import borrowerRoute from "./routes/Borrower.js"
+import typeRoute from "./routes/Type.js"
 import loginRoute from "./routes/Login.js"
 import userRoute from "./routes/Users.js"
 // import backupRoute from "./routes/Backup.js"
@@ -19,6 +20,7 @@ app.use("/track_item_quantity",  tractItemQuantityRoute);
 app.use("/transaction",  transactionRoute);
 app.use("/item",  itemRoute);
 app.use("/item_stock",  itemStockRoute);
+app.use("/type",  typeRoute);
 app.use("/borrower",  borrowerRoute);
 app.use("/login",  loginRoute);
 app.use("/users",  userRoute);

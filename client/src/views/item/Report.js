@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import {
   CCol,
   CContainer,
+  CFormSelect,
   CImage,
   CRow,
   CTable,
@@ -13,25 +14,45 @@ import {
 } from '@coreui/react'
 import ip from './../../constant/ip'
 import axios from 'axios'
-
+import './../../assets/css/custom.css'
 import logo from './../../assets/images/logo.png'
-const TopFivePrintPerJudge = () => {
+
+const Report = () => {
   const api = 'item'
   const [data, setData] = useState([])
+  const [type, setType] = useState([])
+  const [formData, setFormData] = useState({
+    type: '',
+  })
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData(formData.type)
+    fetchType()
+  }, [data])
 
-  const fetchData = async () => {
+  const fetchData = async (selectedType) => {
     try {
-      const response = await axios.get(ip + api)
+      const response = await axios.get(ip + api, { params: { type: selectedType } })
       setData(response.data)
-      console.info(response.data)
     } catch (error) {
       console.error('Error fetching data:', error)
     }
   }
+
+  const fetchType = async () => {
+    try {
+      const response = await axios.get(ip + 'type')
+      setType(response.data)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData({ ...formData, [name]: value })
+  }
+
   return (
     <>
       <CRow className="justify-content-around evenly text-center mt-5 mb-4">
@@ -66,6 +87,19 @@ const TopFivePrintPerJudge = () => {
         </pre>
       </div>
       <CContainer>
+        <CRow className="type">
+          <CCol>
+            <CFormSelect id="type" name="type" onChange={handleChange}>
+              <option value="">Choose Type...</option>
+              {type.map((row) => (
+                <option key={row.id} value={row.id}>
+                  {row.type}
+                </option>
+              ))}
+            </CFormSelect>
+            <hr />
+          </CCol>
+        </CRow>
         <CRow>
           <CCol>
             <CTable striped bordered small responsive className=" mb-5 mt-2" borderColor="dark">
@@ -74,7 +108,7 @@ const TopFivePrintPerJudge = () => {
                   <CTableHeaderCell scope="col">#</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Item</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Available</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Consume</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Consumed</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Total</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Unit</CTableHeaderCell>
                 </CTableRow>
@@ -115,4 +149,4 @@ const TopFivePrintPerJudge = () => {
   )
 }
 
-export default TopFivePrintPerJudge
+export default Report

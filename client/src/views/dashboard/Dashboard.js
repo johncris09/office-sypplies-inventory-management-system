@@ -195,7 +195,7 @@ const Dashboard = ({ pageName, userInfo }) => {
 
           Swal.fire({
             title: 'Success',
-            text: 'Item Borrowed Successfully!',
+            text: 'Item Released Successfully!',
             icon: 'success',
             confirmButtonColor: '#3085d6',
             confirmButtonText: 'Ok',
@@ -344,7 +344,7 @@ const Dashboard = ({ pageName, userInfo }) => {
         <CCol md={7}>
           <CCard className="mb-4">
             <CCardHeader>
-              <strong>Borrowed Item(s)</strong>
+              <strong>Release Item(s)</strong>
             </CCardHeader>
             <CCardBody>
               <CForm
@@ -355,11 +355,11 @@ const Dashboard = ({ pageName, userInfo }) => {
               >
                 <CCol md={12}>
                   <CFormSelect
-                    feedbackInvalid="Borrower is required"
+                    feedbackInvalid="Cosumer is required"
                     id="borrower"
                     label={
                       <>
-                        Borrower
+                        Consumer
                         <span className="text-warning">
                           <strong>*</strong>
                         </span>
@@ -554,7 +554,7 @@ const Dashboard = ({ pageName, userInfo }) => {
               <CRow>
                 <CCol sm={7}>
                   <h4 id="traffic" className="card-title mb-0">
-                    Total Borrowed Item By Date
+                    Total Released Item By Date
                   </h4>
                 </CCol>
                 <CCol sm={5} className="d-none d-md-block">

@@ -37,6 +37,7 @@ const Item = ({ pageName }) => {
   const [itemName, setItemName] = useState('')
   const [itemUnit, setItemUnit] = useState('')
   const [itemStock, setItemStock] = useState([])
+  const [type, setType] = useState([])
   const [tractItemQuantity, setTractItemQuantity] = useState([])
   const [editMode, setEditMode] = useState(false)
   const [validated, setValidated] = useState(false)
@@ -47,6 +48,7 @@ const Item = ({ pageName }) => {
   const [selectedItemQuantityId, setSelectedItemQuantityId] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
+    type: '',
     unit: '',
   })
   const [formItemQuantityData, setFormItemQuantityData] = useState({
@@ -57,6 +59,7 @@ const Item = ({ pageName }) => {
 
   useEffect(() => {
     fetchData()
+    fetchType()
   }, [itemStock, data])
 
   const fetchData = async () => {
@@ -98,6 +101,15 @@ const Item = ({ pageName }) => {
     }
   }
 
+  const fetchType = async () => {
+    try {
+      const response = await axios.get(ip + 'type')
+      setType(response.data)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
+  }
+
   const handleAdd = () => {
     setEditMode(false)
     setNewDataFormModalVisible(true)
@@ -114,6 +126,7 @@ const Item = ({ pageName }) => {
     const form = event.currentTarget
     const _formData = new FormData(form)
     const name = _formData.get('name')
+    const type = _formData.get('type')
     const unit = _formData.get('unit')
 
     try {
@@ -124,6 +137,7 @@ const Item = ({ pageName }) => {
           // Update operation
           await updateData({
             name,
+            type,
             unit,
             id: selectedItemId,
           })
@@ -131,6 +145,7 @@ const Item = ({ pageName }) => {
           // Add operation
           await addData({
             name,
+            type,
             unit,
           })
           setFormData({
@@ -186,7 +201,7 @@ const Item = ({ pageName }) => {
     setAddItemQuantityModel(true)
     setValidated(false)
 
-    // // Show success message
+    // Show success message
     Swal.fire({
       title: 'Success!',
       html: response.data.message,
@@ -315,19 +330,23 @@ const Item = ({ pageName }) => {
     },
     {
       accessorKey: 'available_stock',
-      header: 'Available Stock',
+      header: 'Available',
     },
     {
       accessorKey: 'borrowed_quantity',
-      header: 'Borrowed Quantity',
+      header: 'Consume',
     },
     {
       accessorKey: 'total_quantity',
-      header: 'Total Quantity',
+      header: 'Total',
     },
     {
       accessorKey: 'unit',
       header: 'Unit',
+    },
+    {
+      accessorKey: 'type',
+      header: 'Type',
     },
   ]
 
@@ -447,6 +466,7 @@ const Item = ({ pageName }) => {
                       setFormData({
                         name: row.original.item_name,
                         unit: row.original.unit,
+                        type: row.original.type_id,
                       })
                       setSelectedItemId(row.original.item_id)
                       setNewDataFormModalVisible(true)
@@ -528,6 +548,31 @@ const Item = ({ pageName }) => {
                 onChange={handleChange}
                 required
               />
+            </CCol>
+            <CCol md={12}>
+              <CFormSelect
+                feedbackInvalid="Type is required"
+                id="type"
+                label={
+                  <>
+                    Type
+                    <span className="text-warning">
+                      <strong>*</strong>
+                    </span>
+                  </>
+                }
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Choose...</option>
+                {type.map((row) => (
+                  <option key={row.id} value={row.id}>
+                    {row.type}
+                  </option>
+                ))}
+              </CFormSelect>
             </CCol>
             <CCol md={12}>
               <CFormSelect

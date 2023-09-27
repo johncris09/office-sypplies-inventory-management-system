@@ -4,39 +4,49 @@ const router = express.Router();
 const table = "item";
 
 router.get("/", async (req, res, next) => {
-  const q =
-    `SELECT
-    i.id as item_id,
-    i.name AS item_name,
-    i.unit AS unit,
-    COALESCE(q.quantity_added, 0) AS available_stock,
-    COALESCE(q.borrowed_quantity, 0) AS borrowed_quantity,
-    COALESCE(q.quantity_added, 0) + COALESCE(q.borrowed_quantity, 0) AS total_quantity
-FROM
-    item AS i
-LEFT JOIN(
-    SELECT n.item_id,
-        SUM(n.quantity_added) quantity_added,
-        SUM(s.borrowed_quantity) borrowed_quantity
+  const selectedType = req.query.type;
+  const q = `
+    SELECT
+      i.id AS item_id,
+      i.name AS item_name,
+      i.unit AS unit,
+      COALESCE(q.quantity_added, 0) AS available_stock,
+      COALESCE(q.borrowed_quantity, 0) AS borrowed_quantity,
+      COALESCE(q.quantity_added, 0) + COALESCE(q.borrowed_quantity, 0) AS total_quantity,
+      t.type, i.type as type_id
     FROM
-        item_stock AS n
+      item AS i
     LEFT JOIN(
-        SELECT item_stock_id,
-            SUM(borrowed_quantity) AS borrowed_quantity
-        FROM
-            track_item_quantity
-        GROUP BY
-            item_stock_id
-    ) AS s
-ON
-    n.id = s.item_stock_id
-GROUP BY
-    n.item_id
-) AS q
-ON
-    i.id = q.item_id
-GROUP BY
-    i.id;`;
+      SELECT
+          n.item_id,
+          SUM(n.quantity_added) quantity_added,
+          SUM(s.borrowed_quantity) borrowed_quantity
+      FROM
+          item_stock AS n
+      LEFT JOIN(
+          SELECT
+              item_stock_id,
+              SUM(borrowed_quantity) AS borrowed_quantity
+          FROM
+              track_item_quantity
+          GROUP BY
+              item_stock_id
+      ) AS s
+    ON
+      n.id = s.item_stock_id
+    GROUP BY
+      n.item_id
+    ) AS q
+    ON
+      i.id = q.item_id
+    LEFT JOIN type AS t
+    ON
+      t.id = i.type
+    where  ${selectedType ? `t.id = ${selectedType}` : "true"}
+    GROUP BY
+      i.id
+    ORDER BY
+      i.name;`;
   db.query(q, (err, result) => {
     if (err) throw err;
     res.json(result);
@@ -44,8 +54,7 @@ GROUP BY
 });
 
 router.get("/userItem", async (req, res, next) => {
-  const q =
-    `SELECT
+  const q = `SELECT
         p.id AS item_id,
         p.name AS item_name,
         COALESCE(SUM(ps.quantity_added),
@@ -72,9 +81,10 @@ router.get("/userItem", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { name, unit } = req.body;
+    const { name, unit, type } = req.body;
     const newData = {
       name: name.replace(/\s+/g, " ").trim(),
+      type: type.replace(/\s+/g, " ").trim(),
       unit: unit.replace(/\s+/g, " ").trim(),
     };
     const q = "INSERT INTO " + table + " SET ?";
@@ -85,7 +95,10 @@ router.post("/", async (req, res, next) => {
         res.status(500).json({ error: err.sqlMessage });
         return;
       }
-      res.status(201).json({ message: "Data inserted successfully", item_id: result.insertId });
+      res.status(201).json({
+        message: "Data inserted successfully",
+        item_id: result.insertId,
+      });
     });
   } catch (error) {
     console.error("Error:", error);
@@ -95,11 +108,12 @@ router.post("/", async (req, res, next) => {
 
 router.put("/", async (req, res, next) => {
   try {
-    const { id, name, unit } = req.body;  
+    const { id, name, type, unit } = req.body;
 
     // Perform the update operation
-    const q = "UPDATE " + table + " SET name = ?, unit = ? WHERE id = ?";
-    db.query(q, [name, unit, id], (err, result) => {
+    const q =
+      "UPDATE " + table + " SET name = ?, type = ?,  unit = ? WHERE id = ?";
+    db.query(q, [name, type, unit, id], (err, result) => {
       if (err) {
         console.error("Error updating data:", err);
         res.status(500).json({ error: "Error updating data" });
