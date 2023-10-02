@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import MaterialReactTable from 'material-react-table'
-import { DeleteOutline, EditSharp } from '@mui/icons-material'
+import { Article, DeleteOutline, EditSharp } from '@mui/icons-material'
 import { MenuItem, ListItemIcon } from '@mui/material'
 import RequiredNote from 'src/helper/RequiredNote'
 import ConvertToTitleCase from '../../helper/ConvertToTitleCase'
@@ -26,6 +26,7 @@ import {
   CForm,
   CFormInput,
 } from '@coreui/react'
+import FormatDate from 'src/helper/FormatDate'
 
 const Borrower = ({ pageName }) => {
   const table = 'borrower'
@@ -33,9 +34,10 @@ const Borrower = ({ pageName }) => {
   const [editMode, setEditMode] = useState(false)
   const [validated, setValidated] = useState(false)
   const [newDataFormModalVisible, setNewDataFormModalVisible] = useState(false)
-  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 })
+  const [viewDetailsModalVisible, setViewDetailsModalVisible] = useState(false)
+  const [selectedBorrower, setSelectedBorrower] = useState('')
   const [selectedItemId, setSelectedItemId] = useState(null)
-  const [isPasswordFieldVisible, setPasswordFieldVisible] = useState(true)
+  const [borrowerBorrowedItem, setBorrowerBorrowedItem] = useState([])
   const [formData, setFormData] = useState({
     name: '',
   })
@@ -55,12 +57,26 @@ const Borrower = ({ pageName }) => {
       console.error('Error fetching data:', error)
     }
   }
+
+  const fetchBorrowerBorrowedItem = async (borrower_id) => {
+    try {
+      const response = await axios.get(ip + 'transaction/getBorrowerBorrowedItem/' + borrower_id)
+      const formattedData = response.data.map((item) => ({
+        ...item,
+        date_borrowed: FormatDate(item.date_borrowed),
+      }))
+      console.info(formattedData)
+      setBorrowerBorrowedItem(formattedData)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
+  }
+
   const handleAdd = () => {
     setEditMode(false)
     setNewDataFormModalVisible(true)
     setValidated(false)
     setSelectedItemId(null)
-    setPasswordFieldVisible(true)
   }
 
   const handleSubmit = async (event) => {
@@ -150,6 +166,25 @@ const Borrower = ({ pageName }) => {
     },
   ]
 
+  const borrower_borrowed_item_column = [
+    {
+      accessorKey: 'date_borrowed',
+      header: 'Date Borrowed',
+    },
+    {
+      accessorKey: 'item_name',
+      header: 'Item',
+    },
+    {
+      accessorKey: 'quantity_borrowed',
+      header: 'Quantity',
+    },
+    {
+      accessorKey: 'item_unit',
+      header: 'Unit',
+    },
+  ]
+
   return (
     <CRow>
       <CCol xs={12}>
@@ -184,10 +219,25 @@ const Borrower = ({ pageName }) => {
                     key={0}
                     onClick={async () => {
                       closeMenu()
+                      let id = row.original.id
+                      fetchBorrowerBorrowedItem(id)
+                      setSelectedBorrower(id)
+                      setViewDetailsModalVisible(true)
+                    }}
+                    sx={{ m: 0 }}
+                  >
+                    <ListItemIcon>
+                      <Article />
+                    </ListItemIcon>
+                    View Details
+                  </MenuItem>,
+                  <MenuItem
+                    key={1}
+                    onClick={async () => {
+                      closeMenu()
                       setFormData({
                         name: row.original.name,
                       })
-                      setPasswordFieldVisible(!isPasswordFieldVisible)
                       setSelectedItemId(row.original.id) // Set the selected item ID
                       setNewDataFormModalVisible(true)
                       setEditMode(true)
@@ -200,7 +250,7 @@ const Borrower = ({ pageName }) => {
                     Edit
                   </MenuItem>,
                   <MenuItem
-                    key={1}
+                    key={2}
                     onClick={() => {
                       closeMenu()
                       Swal.fire({
@@ -278,6 +328,37 @@ const Borrower = ({ pageName }) => {
               </CButton>
             </CCol>
           </CForm>
+        </CModalBody>
+      </CModal>
+      {/* View Details Data */}
+      <CModal
+        alignment="center"
+        visible={viewDetailsModalVisible}
+        onClose={() => setViewDetailsModalVisible(false)}
+        backdrop="static"
+        keyboard={false}
+        size="lg"
+      >
+        <CModalHeader>
+          <CModalTitle>View Details</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CRow>
+            <CCol md={12}>
+              {/* Borrower's Borrowed Item */}
+              <MaterialReactTable
+                columns={borrower_borrowed_item_column}
+                data={borrowerBorrowedItem}
+                enableColumnFilterModes
+                enableColumnOrdering
+                enableGrouping
+                enablePinning
+                enableColumnResizing
+                initialState={{ density: 'compact' }}
+                positionToolbarAlertBanner="bottom"
+              />
+            </CCol>
+          </CRow>
         </CModalBody>
       </CModal>
     </CRow>
